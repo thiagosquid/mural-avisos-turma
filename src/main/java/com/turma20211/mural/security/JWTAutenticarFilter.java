@@ -29,7 +29,7 @@ public class JWTAutenticarFilter extends UsernamePasswordAuthenticationFilter {
 
     public static final int TOKEN_EXPIRATION = 600_000;
 
-    public static String TOKEN_PASSWORD_MURAL = "463408a1-54c9-4307-bb1c-6cced559f5a7";
+    public static String TOKEN_PASSWORD_MURAL = System.getenv("TOKEN_PASSWORD_MURAL");
 
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
