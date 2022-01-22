@@ -16,6 +16,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "usuarios")
 public class User {
 
     @Id
