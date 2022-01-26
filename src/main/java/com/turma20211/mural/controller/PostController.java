@@ -5,8 +5,11 @@ import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.service.PostService;
 import com.turma20211.mural.service.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.cassandra.CassandraProperties;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.authentication.preauth.RequestAttributeAuthenticationFilter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,6 +56,7 @@ public class PostController {
     @PostMapping(value = "/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public void insert(@RequestBody Post post, @PathVariable Long userId){
+
         post.setId(null);
         post.setUser(userRepository.getById(userId));
         postService.insert(post);

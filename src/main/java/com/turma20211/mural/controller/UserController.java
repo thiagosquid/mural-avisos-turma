@@ -1,13 +1,18 @@
 package com.turma20211.mural.controller;
 
 
+import com.turma20211.mural.dto.UserDto;
+import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
+import com.turma20211.mural.service.UserService;
 import com.turma20211.mural.utils.Mail;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
@@ -20,6 +25,8 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
+    @Autowired
+    private UserService userService;
 
     public UserController(UserRepository userRepository, PasswordEncoder encoder) {
         this.userRepository = userRepository;
@@ -31,16 +38,28 @@ public class UserController {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getById(@PathVariable Long id){
+        Optional<User> user = userRepository.findById(id);
+
+        if(user.isPresent()){
+
+            return ResponseEntity.status(HttpStatus.FOUND).body(UserMapper.toDto(user.get()));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<User> saveUser(@RequestBody User user) throws MessagingException, IOException {
         user.setPassword(encoder.encode(user.getPassword()));
-        User userSaved = userRepository.save(user);
+        User userSaved = userService.save(user);
 //        if(userSaved != null){
 //            Mail mailer = new Mail();
 //            mailer.send(userSaved);
 //        }
 
-        return ResponseEntity.ok(userRepository.save(user));
+        return ResponseEntity.ok(userSaved);
     }
 
     @PostMapping("/verify")

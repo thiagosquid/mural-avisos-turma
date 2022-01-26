@@ -3,7 +3,6 @@ package com.turma20211.mural.service;
 import com.turma20211.mural.model.Post;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.PostRepository;
-import com.turma20211.mural.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +30,7 @@ public class PostService {
     public List<Post> getByUser(Long id) {
         Optional<User> user = userService.findById(id);
 
-        if(user.isPresent()){
+        if(user != null){
             return postRepository.findByUser(user.get());
         }
         return new ArrayList<Post>();

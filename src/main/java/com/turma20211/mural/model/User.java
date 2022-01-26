@@ -2,6 +2,7 @@ package com.turma20211.mural.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,8 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "usuarios")
+@Table(name = "usuarios") //alterado o nome pq estava dando conflito no banco da AWS
+@JsonRootName(value = "user")
 public class User {
 
     @Id
@@ -37,6 +39,9 @@ public class User {
 
     @Column(unique = true)
     private String email;
+
+    @Column
+    private String avatar;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore

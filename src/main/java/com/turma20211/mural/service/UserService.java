@@ -16,4 +16,24 @@ public class UserService {
     public Optional<User> findById(Long id){
         return userRepository.findById(id);
     }
+
+//TODO implementar exception para email inválido
+    public User save(User user) {
+        if (user.getEmail().contains("@academico.ifs")) {
+            return userRepository.save(user);
+        }
+        return new User();
+    }
+
+//TODO implementar exception para usuário inválido
+    public User update(User user){
+        Optional<User> oldUser = userRepository.findById(user.getId());
+        Optional<User> byUsername = userRepository.findByUsername(user.getUsername());
+
+        if(oldUser.isPresent() && byUsername.isPresent() && oldUser.get().getId() == byUsername.get().getId()){
+            return userRepository.save(user);
+        }
+
+        return new User();
+    }
 }

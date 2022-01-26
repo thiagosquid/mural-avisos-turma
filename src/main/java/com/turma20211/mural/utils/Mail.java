@@ -13,9 +13,9 @@ import java.util.Properties;
 public class Mail {
     private final String PORT = "587";
     private final String HOST = "smtp.gmail.com";
-    private final String USERNAME = "";
-    private final String PASSWORD = "";
-    private final String EMAIL = "@gmail.com";
+    private final String USERNAME = "muraldaturma";
+    private final String PASSWORD = System.getenv("EMAIL_PASSWORD_MURAL");
+    private final String EMAIL = "muraldaturma@gmail.com";
 
     private final boolean AUTH = true;
     private final boolean STARTTLS = true;

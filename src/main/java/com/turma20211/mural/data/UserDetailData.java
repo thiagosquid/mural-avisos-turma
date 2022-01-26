@@ -12,8 +12,14 @@ public class UserDetailData implements UserDetails {
 
     private final Optional<User> user;
 
+    private Long id;
+
     public UserDetailData(Optional<User> user) {
         this.user = user;
+    }
+
+    public Long getId() {
+        return user.orElse(new User()).getId();
     }
 
     @Override
