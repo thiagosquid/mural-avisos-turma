@@ -23,6 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/v1/user")
+@CrossOrigin(value = "*")
 public class UserController {
 
     private final UserRepository userRepository;
