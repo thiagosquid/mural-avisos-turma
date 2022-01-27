@@ -60,7 +60,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
         configuration.addAllowedMethod("DELETE");
         configuration.addAllowedMethod("OPTIONS");
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOrigin("*/*");
+        configuration.addAllowedOrigin("*");
         configuration.addAllowedHeader("*");
 
         source.registerCorsConfiguration("/**", configuration);

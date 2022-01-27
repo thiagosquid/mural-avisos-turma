@@ -21,6 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/v1/post")
+@CrossOrigin(value = "*")
 public class PostController {
 
     @Autowired
