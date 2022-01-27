@@ -48,7 +48,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"));
-		configuration.setAllowedHeaders(Arrays.asList("Access-Control-Allow-Headers", "Origin, X-Request-Width, Content-Type, Accept"));
+		configuration.setAllowedHeaders(Arrays.asList("Access-Control-Allow-Headers", "Origin", "X-Request-Width", "Content-Type", "Accept"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
