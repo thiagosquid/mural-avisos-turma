@@ -1,5 +1,7 @@
 package com.turma20211.mural.controller;
 
+import com.turma20211.mural.dto.PostDto;
+import com.turma20211.mural.dto.mapper.PostMapper;
 import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Post;
 import com.turma20211.mural.repository.UserRepository;
@@ -29,18 +31,16 @@ public class PostController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Post> getAll(@RequestParam(required = false, name = "userId") Long userId) throws UserNotFoundException {
-        if(userId != null){
-            return getByUser(userId);
-        }
+    public List<Post> getAll() {
+
         return postService.getAll();
     }
 
     @GetMapping(value = "/{postId}")
-    public ResponseEntity<Post> getById(@PathVariable Long postId){
+    public ResponseEntity<PostDto> getById(@PathVariable Long postId){
         Optional<Post> post = postService.getById(postId);
         if(post.isPresent()){
-            return ResponseEntity.status(HttpStatus.FOUND).body(post.get());
+            return ResponseEntity.status(HttpStatus.FOUND).body(PostMapper.toDto(post.get()));
         }
 
         return ResponseEntity.notFound().build();
@@ -64,6 +64,7 @@ public class PostController {
     }
 
     @DeleteMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id){
         postService.delete(id);
     }

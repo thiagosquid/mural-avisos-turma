@@ -1,5 +1,6 @@
 package com.turma20211.mural.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnore
     private Post post;
 
 
