@@ -34,6 +34,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.cors();
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/login", "/api/v1/user/signup").permitAll()
                 .anyRequest().authenticated()
@@ -43,7 +44,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 	
-	/* @Bean
+	@Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
@@ -52,7 +53,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-   } */
+     }
 
     @Bean
     @Override
