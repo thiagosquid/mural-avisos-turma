@@ -1,5 +1,6 @@
 package com.turma20211.mural.service;
 
+import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Comment;
 import com.turma20211.mural.model.Post;
 import com.turma20211.mural.model.User;
@@ -21,7 +22,7 @@ public class CommentService {
     @Autowired
     private UserService userService;
 
-    public Comment makeComment(Long postId, Long userId, Comment comment){
+    public Comment makeComment(Long postId, Long userId, Comment comment) throws UserNotFoundException {
         Optional<Post> post = postService.getById(postId);
         Optional<User> user = userService.findById(userId);
 
@@ -31,5 +32,9 @@ public class CommentService {
             return commentRepository.save(comment);
         }
         return new Comment();
+    }
+
+    public void delete(Long id){
+        commentRepository.deleteById(id);
     }
 }

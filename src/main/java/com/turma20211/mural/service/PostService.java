@@ -1,5 +1,6 @@
 package com.turma20211.mural.service;
 
+import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Post;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.PostRepository;
@@ -27,7 +28,7 @@ public class PostService {
         return postRepository.findById(id);
     }
 
-    public List<Post> getByUser(Long id) {
+    public List<Post> getByUser(Long id) throws UserNotFoundException {
         Optional<User> user = userService.findById(id);
 
         if(user != null){
@@ -36,7 +37,11 @@ public class PostService {
         return new ArrayList<Post>();
     }
 
-    public void insert(Post post){
-        postRepository.save(post);
+    public Post insert(Post post){
+        return postRepository.save(post);
+    }
+
+    public void delete(Long id){
+        postRepository.deleteById(id);
     }
 }

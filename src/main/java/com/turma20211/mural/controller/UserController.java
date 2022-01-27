@@ -3,6 +3,8 @@ package com.turma20211.mural.controller;
 
 import com.turma20211.mural.dto.UserDto;
 import com.turma20211.mural.dto.mapper.UserMapper;
+import com.turma20211.mural.exception.UserInvalidEmailException;
+import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.service.UserService;
@@ -20,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/api/v1")
+@RequestMapping(value = "/api/v1/user")
 public class UserController {
 
     private final UserRepository userRepository;
@@ -39,19 +41,19 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getById(@PathVariable Long id){
-        Optional<User> user = userRepository.findById(id);
+    public ResponseEntity<UserDto> getById(@PathVariable Long id) throws UserNotFoundException {
+        Optional<User> user = userService.findById(id);
 
         if(user.isPresent()){
 
-            return ResponseEntity.status(HttpStatus.FOUND).body(UserMapper.toDto(user.get()));
+            return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> saveUser(@RequestBody User user) throws MessagingException, IOException {
+    public ResponseEntity<User> saveUser(@RequestBody User user) throws UserInvalidEmailException {
         user.setPassword(encoder.encode(user.getPassword()));
         User userSaved = userService.save(user);
 //        if(userSaved != null){

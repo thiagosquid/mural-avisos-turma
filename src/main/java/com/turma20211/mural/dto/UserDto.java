@@ -1,5 +1,6 @@
 package com.turma20211.mural.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.turma20211.mural.model.Post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class UserDto {
     private String lastName;
     private String email;
     private String avatar;
+    @JsonIgnore
     private List<Post> postsList = new ArrayList<>();
 
 }

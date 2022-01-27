@@ -2,11 +2,13 @@ package com.turma20211.mural.controller;
 
 import com.turma20211.mural.dto.mapper.CommentRequestMapper;
 import com.turma20211.mural.dto.request.CommentRequestDto;
+import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Comment;
 import com.turma20211.mural.model.Post;
 import com.turma20211.mural.service.CommentService;
 import com.turma20211.mural.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -19,9 +21,15 @@ public class CommentController {
     private CommentService commentService;
 
     @PostMapping
-    public Comment makeComment(@RequestBody CommentRequestDto commentDto){
+    public CommentRequestDto makeComment(@RequestBody CommentRequestDto commentDto) throws UserNotFoundException {
         Comment comment = CommentRequestMapper.toModel(commentDto);
+        Comment commentResponse = commentService.makeComment(commentDto.getPostId(), commentDto.getUserId(), comment);
+        return CommentRequestMapper.toDto(commentResponse);
+    }
 
-        return commentService.makeComment(commentDto.getPostId(), commentDto.getUserId(), comment);
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id){
+        commentService.delete(id);
     }
 }

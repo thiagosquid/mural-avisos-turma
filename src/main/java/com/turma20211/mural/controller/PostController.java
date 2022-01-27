@@ -1,9 +1,11 @@
 package com.turma20211.mural.controller;
 
+import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Post;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.service.PostService;
 import com.turma20211.mural.service.UserDetailServiceImpl;
+import com.turma20211.mural.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.cassandra.CassandraProperties;
 import org.springframework.http.HttpHeaders;
@@ -23,11 +25,11 @@ public class PostController {
     private PostService postService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Post> getAll(@RequestParam(required = false, name = "userId") Long userId){
+    public List<Post> getAll(@RequestParam(required = false, name = "userId") Long userId) throws UserNotFoundException {
         if(userId != null){
             return getByUser(userId);
         }
@@ -45,7 +47,7 @@ public class PostController {
 
     }
 
-    public List<Post> getByUser(Long userId) {
+    public List<Post> getByUser(Long userId) throws UserNotFoundException {
 
         List<Post> postList = postService.getByUser(userId);
 
@@ -54,11 +56,15 @@ public class PostController {
 
 
     @PostMapping(value = "/{userId}")
-    @ResponseStatus(HttpStatus.OK)
-    public void insert(@RequestBody Post post, @PathVariable Long userId){
+    public ResponseEntity<Post> insert(@RequestBody Post post, @PathVariable Long userId) throws UserNotFoundException {
 
         post.setId(null);
-        post.setUser(userRepository.getById(userId));
-        postService.insert(post);
+        post.setUser(userService.findById(userId).get());
+        return ResponseEntity.ok(postService.insert(post));
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public void delete(@PathVariable Long id){
+        postService.delete(id);
     }
 }
