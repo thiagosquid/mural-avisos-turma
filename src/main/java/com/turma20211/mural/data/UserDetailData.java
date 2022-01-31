@@ -13,6 +13,11 @@ public class UserDetailData implements UserDetails {
     private final Optional<User> user;
 
     private Long id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String avatar;
+
 
     public UserDetailData(Optional<User> user) {
         this.user = user;
@@ -20,6 +25,22 @@ public class UserDetailData implements UserDetails {
 
     public Long getId() {
         return user.orElse(new User()).getId();
+    }
+
+    public String getFirstName(){
+        return user.orElse(new User()).getFirstName();
+    }
+
+    public String getLastName(){
+        return user.orElse(new User()).getLastName();
+    }
+
+    public String getEmail(){
+        return user.orElse(new User()).getEmail();
+    }
+
+    public String getAvatar(){
+        return user.orElse(new User()).getAvatar();
     }
 
     @Override

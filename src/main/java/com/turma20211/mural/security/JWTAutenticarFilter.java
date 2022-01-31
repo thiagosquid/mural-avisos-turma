@@ -9,9 +9,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,17 +39,18 @@ public class JWTAutenticarFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
-                                                HttpServletResponse response) throws AuthenticationException {
+                                                HttpServletResponse response) throws AuthenticationException, UsernameNotFoundException {
         try {
 
             User user = new ObjectMapper()
                     .readValue(request.getInputStream(), User.class);
 
-            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
                     user.getUsername(),
                     user.getPassword(),
                     new ArrayList<>()
-            ));
+            );
+            return authenticationManager.authenticate(authentication);
 
         } catch (IOException e) {
             throw new RuntimeException("Falha ao autenticar usuario", e);
@@ -65,8 +66,9 @@ public class JWTAutenticarFilter extends UsernamePasswordAuthenticationFilter {
 
         UserDetailData userData = (UserDetailData) authResult.getPrincipal();
 
-        String token = JWT.create().
-                withSubject(userData.getUsername())
+        String token = JWT.create()
+                .withClaim("userId", userData.getId())
+                .withSubject(userData.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 

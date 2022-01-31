@@ -3,21 +3,19 @@ package com.turma20211.mural.controller;
 
 import com.turma20211.mural.dto.UserDto;
 import com.turma20211.mural.dto.mapper.UserMapper;
+import com.turma20211.mural.exception.EmailAlreadyExistsException;
 import com.turma20211.mural.exception.UserInvalidEmailException;
 import com.turma20211.mural.exception.UserNotFoundException;
+import com.turma20211.mural.exception.UsernameAlreadyExistsException;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.service.UserService;
-import com.turma20211.mural.utils.Mail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import javax.mail.MessagingException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +52,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> saveUser(@RequestBody User user) throws UserInvalidEmailException {
+    public ResponseEntity<User> saveUser(@RequestBody User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException {
         user.setPassword(encoder.encode(user.getPassword()));
         User userSaved = userService.save(user);
 //        if(userSaved != null){

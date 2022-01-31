@@ -4,16 +4,11 @@ import com.turma20211.mural.dto.PostDto;
 import com.turma20211.mural.dto.mapper.PostMapper;
 import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Post;
-import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.service.PostService;
-import com.turma20211.mural.service.UserDetailServiceImpl;
 import com.turma20211.mural.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cassandra.CassandraProperties;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.web.authentication.preauth.RequestAttributeAuthenticationFilter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
