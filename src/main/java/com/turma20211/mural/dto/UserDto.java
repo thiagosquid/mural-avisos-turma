@@ -20,6 +20,13 @@ public class UserDto {
     private String lastName;
     private String email;
     private String avatar;
+
+    @JsonIgnore
+    private Boolean locked = false;
+
+    @JsonIgnore
+    private Boolean enabled = false;
+
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();
 

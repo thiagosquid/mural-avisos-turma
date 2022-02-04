@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class UserNotFoundException extends Exception {
 
     public UserNotFoundException(Long id) {
-        super(String.format("User with ID %s not found", id));
+        super(String.format("Usuário com ID %s não encontrado", id));
     }
 
     public UserNotFoundException(String username) {
-        super(String.format("User with Username %s not found", username));
+        super(String.format("Usuário com o username %s não encontrado", username));
     }
 }

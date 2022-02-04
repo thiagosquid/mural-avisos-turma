@@ -17,6 +17,8 @@ public class UserDetailData implements UserDetails {
     private String lastName;
     private String email;
     private String avatar;
+    private Boolean locked;
+    private Boolean enabled;
 
 
     public UserDetailData(Optional<User> user) {
@@ -65,7 +67,7 @@ public class UserDetailData implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !user.orElse(new User()).getLocked();
     }
 
     @Override
@@ -75,6 +77,6 @@ public class UserDetailData implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.orElse(new User()).getEnabled();
     }
 }

@@ -14,13 +14,13 @@ public class Mail {
     private final String PORT = "587";
     private final String HOST = "smtp.gmail.com";
     private final String USERNAME = "muraldaturma";
-    private final String PASSWORD = System.getenv("EMAIL_PASSWORD_MURAL");
+    private static String PASSWORD = System.getenv("EMAIL_PASSWORD_MURAL");
     private final String EMAIL = "muraldaturma@gmail.com";
 
     private final boolean AUTH = true;
     private final boolean STARTTLS = true;
 
-    public void send(User user) throws AddressException, MessagingException, IOException {
+    public void send(User user, String url) throws AddressException, MessagingException, IOException {
 
         Session session = Session.getDefaultInstance(setProperties());
 
@@ -29,10 +29,13 @@ public class Mail {
         msg.setSentDate(new Date());
         msg.setSubject("Cadastro no Mural da Turma");
 
-        msg.setFrom(new InternetAddress(EMAIL, false));
+        msg.setFrom(new InternetAddress(EMAIL, true));
         msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
 
-        msg.setContent(user.getFirstName().concat(", bem-vindo(a) ao Mural da Turma!"), "text/html");
+        url = "<a href="+url+" target='_blank'>Clique Aqui</a>";
+
+        msg.setContent(user.getFirstName().concat(", bem-vindo(a) ao Mural da Turma!" +
+                "\nAcesse o link abaixo para confirmar sua conta.").concat(url), "text/html");
 
         Transport transport = session.getTransport("smtp");
 

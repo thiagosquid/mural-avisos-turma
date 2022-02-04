@@ -43,6 +43,12 @@ public class User {
     @Column
     private String avatar;
 
+    @JsonIgnore
+    private Boolean locked = false;
+
+    @JsonIgnore
+    private Boolean enabled = false;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();

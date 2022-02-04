@@ -16,12 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
+import javax.websocket.server.PathParam;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/v1/user")
-@CrossOrigin(value = "*")
 public class UserController {
 
     private final UserRepository userRepository;
@@ -52,15 +54,17 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> saveUser(@RequestBody User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException {
+    public ResponseEntity<String> saveUser(@RequestBody User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException {
         user.setPassword(encoder.encode(user.getPassword()));
-        User userSaved = userService.save(user);
-//        if(userSaved != null){
-//            Mail mailer = new Mail();
-//            mailer.send(userSaved);
-//        }
+        userService.save(user);
 
-        return ResponseEntity.ok(userSaved);
+        return ResponseEntity.ok("");
+    }
+
+    @CrossOrigin("*")
+    @GetMapping("/confirm")
+    public String confirm (@RequestParam String token){
+        return userService.confirmToken(token);
     }
 
     @PostMapping("/verify")

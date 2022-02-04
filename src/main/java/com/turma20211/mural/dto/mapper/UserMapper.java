@@ -12,6 +12,8 @@ public class UserMapper {
                 user.getLastName(),
                 user.getEmail(),
                 user.getAvatar(),
+                user.getLocked(),
+                user.getEnabled(),
                 user.getPostsList());
 
         return userDto;
@@ -25,6 +27,8 @@ public class UserMapper {
                 userDto.getLastName(),
                 userDto.getEmail(),
                 userDto.getAvatar(),
+                userDto.getLocked(),
+                userDto.getEnabled(),
                 userDto.getPostsList());
 
         return user;

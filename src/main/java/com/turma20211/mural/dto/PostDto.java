@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,9 +27,9 @@ public class PostDto {
 
     private String content;
 
-    private Date deadline;
+    private LocalDateTime deadline;
 
-    private Date dateRegister;
+    private LocalDateTime dateRegister;
 
     private Tag tag;
 

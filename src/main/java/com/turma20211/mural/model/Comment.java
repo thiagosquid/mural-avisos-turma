@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -26,7 +27,7 @@ public class Comment {
     private String content;
 
     @Column(nullable = false)
-    private Date dateRegister;
+    private LocalDateTime dateRegister;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

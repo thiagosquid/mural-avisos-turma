@@ -7,6 +7,7 @@ import com.turma20211.mural.model.Post;
 import com.turma20211.mural.service.PostService;
 import com.turma20211.mural.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/v1/post")
-@CrossOrigin(value = "*")
 public class PostController {
 
     @Autowired

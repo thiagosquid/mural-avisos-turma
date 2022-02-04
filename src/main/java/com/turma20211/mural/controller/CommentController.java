@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/comment")
-@CrossOrigin(value = "*")
 public class CommentController {
 
     @Autowired

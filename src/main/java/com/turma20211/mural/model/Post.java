@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,10 +31,10 @@ public class Post {
     @Column(nullable = false)
     private String content;
 
-    private Date deadline;
+    private LocalDateTime deadline;
 
     @Column(nullable = false)
-    private Date dateRegister;
+    private LocalDateTime dateRegister;
 
     @ManyToOne
     @JoinColumn(name = "tag_id", nullable = false)

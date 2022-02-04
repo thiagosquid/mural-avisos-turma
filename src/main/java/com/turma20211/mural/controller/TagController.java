@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/tag")
-@CrossOrigin(value = "*")
 public class TagController {
 
     @Autowired
