@@ -22,9 +22,9 @@ public class ConfirmationTokenService {
         return confirmationTokenRepository.findByToken(token);
     }
 
-    public void setConfirmedAt(String token) {
-        confirmationTokenRepository.updateConfirmedAt(
-                LocalDateTime.now(), token);
+    public void setConfirmedAt(ConfirmationToken token) {
+        token.setConfirmedAt(LocalDateTime.now());
+        confirmationTokenRepository.save(token);
     }
 
 }

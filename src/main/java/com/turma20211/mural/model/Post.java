@@ -15,7 +15,6 @@ import java.util.List;
 
 @Entity
 @Data
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonRootName(value = "post")

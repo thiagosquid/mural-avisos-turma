@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -63,7 +62,7 @@ public class UserController {
 
     @CrossOrigin("*")
     @GetMapping("/confirm")
-    public String confirm (@RequestParam String token){
+    public String confirm (@RequestParam String token) throws UserNotFoundException {
         return userService.confirmToken(token);
     }
 

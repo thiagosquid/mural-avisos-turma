@@ -14,7 +14,6 @@ import java.util.List;
 
 @Entity
 @Data
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "usuarios") //alterado o nome pq estava dando conflito no banco da AWS
@@ -52,5 +51,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<ConfirmationToken> tokenList = new ArrayList<>();
 
 }

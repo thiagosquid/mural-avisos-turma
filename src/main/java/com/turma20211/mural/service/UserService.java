@@ -10,6 +10,7 @@ import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.utils.Mail;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.SpringProperties;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserService {
 
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -60,11 +62,15 @@ public class UserService {
                     );
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            String link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
-
-//            String link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
-            Mail mailer = new Mail();
-            mailer.send(user, link);
+            String link = "";
+            if(System.getenv("SEND_EMAIL").equals("true")){
+                link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
+                Mail mailer = new Mail();
+                mailer.send(user, link);
+            }else{
+                link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
+                System.out.println(link);
+            }
 
             return token;
         }else{
@@ -83,7 +89,7 @@ public class UserService {
         return new User();
     }
 
-    public String confirmToken(String token){
+    public String confirmToken(String token) throws UserNotFoundException {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->
@@ -99,15 +105,13 @@ public class UserService {
             throw new IllegalStateException("token expired");
         }
 
-        confirmationTokenService.setConfirmedAt(token);
-
+        confirmationTokenService.setConfirmedAt(confirmationToken);
         User user = confirmationToken.getUser();
+
         user.setEnabled(true);
-        userRepository.save(user);
-
-        return "confirmed";
+        update(user);
+        return "Confirmado!";
     }
-
 
 
     private User verifyIfExists(Long id) throws UserNotFoundException {
