@@ -1,16 +1,17 @@
 package com.turma20211.mural.service;
 
+import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.EmailAlreadyExistsException;
 import com.turma20211.mural.exception.UserInvalidEmailException;
 import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.exception.UsernameAlreadyExistsException;
 import com.turma20211.mural.model.ConfirmationToken;
+import com.turma20211.mural.model.PasswordToken;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.utils.Mail;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.SpringProperties;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
@@ -29,6 +30,9 @@ public class UserService {
     @Autowired
     private ConfirmationTokenService confirmationTokenService;
 
+    @Autowired
+    private PasswordTokenService passwordTokenService;
+
     public Optional<User> findById(Long id) throws UserNotFoundException {
         return Optional.ofNullable(userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }
@@ -37,18 +41,22 @@ public class UserService {
         if (user.getEmail().contains("@academico.ifs.edu.br")) {
             user.setUsername(user.getUsername().toLowerCase());
             user.setEmail(user.getEmail().toLowerCase());
+            Optional<ConfirmationToken> ct = Optional.ofNullable(new ConfirmationToken());
 
-            boolean existsUsername = userRepository.existsByUsername(user.getUsername());
-
-            if(existsUsername){
-                throw new UsernameAlreadyExistsException(user.getUsername());
+            Optional<User> userExistent = userRepository.findByEmail(user.getEmail());
+            if(userExistent.isPresent()){
+                ct = confirmationTokenService.findByUser(userExistent.get());
             }
-
+            boolean existsUsername = userRepository.existsByUsername(user.getUsername());
             boolean existsEmail = userRepository.existsByEmail(user.getEmail());
 
-            if(existsEmail){
+            if (existsEmail && LocalDateTime.now().isAfter(ct.get().getExpiresAt()) && ct.isPresent()) {
+                deleteByEmail(userExistent.get());
+                confirmationTokenService.delete(ct.get());
+            } else if (existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt()))
                 throw new EmailAlreadyExistsException(user.getEmail());
-            }
+            else if(existsUsername)
+                throw new UsernameAlreadyExistsException(user.getUsername());
 
             User userSaved = userRepository.save(user);
 
@@ -63,7 +71,7 @@ public class UserService {
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
             String link = "";
-            if(System.getenv("SEND_EMAIL").equals("true")){
+            if(System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")){
                 link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
                 Mail mailer = new Mail();
                 mailer.send(user, link);
@@ -93,16 +101,16 @@ public class UserService {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->
-                        new IllegalStateException("token não encontrado"));
+                        new IllegalStateException("Token não encontrado"));
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new IllegalStateException("usuário já registrado");
+            return "Conta já validada";
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("token expired");
+            throw new IllegalStateException("Token expirado");
         }
 
         confirmationTokenService.setConfirmedAt(confirmationToken);
@@ -110,9 +118,62 @@ public class UserService {
 
         user.setEnabled(true);
         update(user);
-        return "Confirmado!";
+        return "<h1 style=\"color=red; weight=bold;\">Conta verificada</h1>" +
+                "<p>Estamos redirecionando para página de login...</p>" +
+                "<script> setTimeout(()=> window.location.replace(\"http://projeto-mural-turma.vercel.app/\"), 3500); </script>";
     }
 
+    public String passwordToken(User user) throws MessagingException, IOException {
+
+        String token = UUID.randomUUID().toString();
+
+        PasswordToken passwordToken = new PasswordToken(
+                token,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(15),
+                user
+        );
+
+        passwordTokenService.savePasswordToken(passwordToken);
+        String link = "";
+        if(System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")){
+            link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
+            Mail mailer = new Mail();
+            mailer.send(user, link);
+        }else{
+            link = "http://localhost:8080/recovery?token=" + token + "&userId=" + user.getId();
+            System.out.println(link);
+        }
+
+        return "";
+    }
+
+    public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException {
+        User user = userRepository.getById(passwordRecoveryDto.getId());
+
+        PasswordToken passwordToken = passwordTokenService.getToken(passwordRecoveryDto.getToken());
+
+        if (passwordToken.getConfirmedAt() != null) {
+            return "Conta já validada";
+        }
+
+        LocalDateTime expiredAt = passwordToken.getExpiresAt();
+
+        if (expiredAt.isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Token expirado");
+        }
+
+        passwordTokenService.setConfirmedAt(passwordToken);
+        user.setPassword(passwordRecoveryDto.getPassword());
+
+        this.update(user);
+
+        return "Senha alterada com sucesso";
+    }
+
+    public User verifyIfEmailExists(String email){
+        return userRepository.findByEmail(email).orElse(new User());
+    }
 
     private User verifyIfExists(Long id) throws UserNotFoundException {
         return userRepository.findById(id).orElseThrow(()-> new UserNotFoundException(id));
@@ -120,5 +181,9 @@ public class UserService {
 
     private User verifyIfExists(String username) throws UserNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(()-> new UserNotFoundException(username));
+    }
+
+    private void deleteByEmail(User user){
+        userRepository.delete(user);
     }
 }

@@ -1,6 +1,7 @@
 package com.turma20211.mural.service;
 
 import com.turma20211.mural.model.ConfirmationToken;
+import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.ConfirmationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,14 @@ public class ConfirmationTokenService {
     public void setConfirmedAt(ConfirmationToken token) {
         token.setConfirmedAt(LocalDateTime.now());
         confirmationTokenRepository.save(token);
+    }
+
+    public Optional<ConfirmationToken> findByUser(User user){
+        return confirmationTokenRepository.findByUser(user);
+    }
+
+    public void delete(ConfirmationToken confirmationToken){
+        confirmationTokenRepository.delete(confirmationToken);
     }
 
 }

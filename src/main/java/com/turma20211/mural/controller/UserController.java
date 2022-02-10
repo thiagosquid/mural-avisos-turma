@@ -3,6 +3,7 @@ package com.turma20211.mural.controller;
 
 import com.turma20211.mural.dto.UserDto;
 import com.turma20211.mural.dto.mapper.UserMapper;
+import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.EmailAlreadyExistsException;
 import com.turma20211.mural.exception.UserInvalidEmailException;
 import com.turma20211.mural.exception.UserNotFoundException;
@@ -64,6 +65,25 @@ public class UserController {
     @GetMapping("/confirm")
     public String confirm (@RequestParam String token) throws UserNotFoundException {
         return userService.confirmToken(token);
+    }
+
+    @CrossOrigin("*")
+    @GetMapping("/recovery")
+    public ResponseEntity<String> recovery(@RequestParam(value = "email") String email) throws MessagingException, IOException {
+        User user = userService.verifyIfEmailExists(email);
+        if(user.getId() != null){
+            userService.passwordToken(user);
+            return ResponseEntity.ok("");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("");
+    }
+
+    @CrossOrigin("*")
+    @PostMapping("/recovery")
+    @ResponseStatus(HttpStatus.OK)
+    public void recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException {
+        passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
+        userService.changePassword(passwordRecoveryDto);
     }
 
     @PostMapping("/verify")
