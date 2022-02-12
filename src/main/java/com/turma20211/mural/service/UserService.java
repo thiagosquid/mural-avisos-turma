@@ -74,7 +74,7 @@ public class UserService {
             if(System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")){
                 link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
                 Mail mailer = new Mail();
-                mailer.send(user, link);
+                mailer.sendConfirmationAccount(user, link);
             }else{
                 link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
                 System.out.println(link);
@@ -104,7 +104,9 @@ public class UserService {
                         new IllegalStateException("Token não encontrado"));
 
         if (confirmationToken.getConfirmedAt() != null) {
-            return "Conta já validada";
+            return "<h1 style=\"color=red; weight=bold; margin: auto\">Sua Conta já foi verificada</h1>" +
+                    "<p style=\"margin: auto;\">Estamos redirecionando para página de login...</p>" +
+                    "<script> setTimeout(()=> window.location.replace(\"http://projeto-mural-turma.vercel.app/\"), 3500); </script>";
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
@@ -118,12 +120,23 @@ public class UserService {
 
         user.setEnabled(true);
         update(user);
-        return "<h1 style=\"color=red; weight=bold;\">Conta verificada</h1>" +
-                "<p>Estamos redirecionando para página de login...</p>" +
+        return "<h1 style=\"color=red; weight=bold; margin: auto\">Conta verificada</h1>" +
+                "<p style=\"margin: auto;\">Estamos redirecionando para página de login...</p>" +
                 "<script> setTimeout(()=> window.location.replace(\"http://projeto-mural-turma.vercel.app/\"), 3500); </script>";
     }
 
-    public String passwordToken(User user) throws MessagingException, IOException {
+    public String changePasswordToken(User user) throws MessagingException, IOException {
+
+        Optional<PasswordToken> pt = passwordTokenService.findByUser(user);
+
+        if(pt.isPresent()){
+            if(pt.get().getUser() != null && pt.get().getConfirmedAt() == null
+                    && pt.get().getExpiresAt().isAfter(LocalDateTime.now())){
+                return "Verifique seu email para alterar a senha";
+            }else{
+                passwordTokenService.delete(pt.get());
+            }
+        }
 
         String token = UUID.randomUUID().toString();
 
@@ -137,11 +150,11 @@ public class UserService {
         passwordTokenService.savePasswordToken(passwordToken);
         String link = "";
         if(System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")){
-            link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
+            link = "http://projeto-mural-turma.vercel.app/recovery?token=" + token + "&id=" + user.getId();
             Mail mailer = new Mail();
-            mailer.send(user, link);
+            mailer.sendRecoveryEmail(user, link);
         }else{
-            link = "http://localhost:8080/recovery?token=" + token + "&userId=" + user.getId();
+            link = "http://projeto-mural-turma.vercel.app/recovery?token=" + token + "&id=" + user.getId();
             System.out.println(link);
         }
 
@@ -154,7 +167,7 @@ public class UserService {
         PasswordToken passwordToken = passwordTokenService.getToken(passwordRecoveryDto.getToken());
 
         if (passwordToken.getConfirmedAt() != null) {
-            return "Conta já validada";
+            return "Token já utilizado";
         }
 
         LocalDateTime expiredAt = passwordToken.getExpiresAt();

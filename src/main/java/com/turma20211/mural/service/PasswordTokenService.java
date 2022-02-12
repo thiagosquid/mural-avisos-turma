@@ -29,4 +29,12 @@ public class PasswordTokenService {
         passwordToken.setConfirmedAt(LocalDateTime.now());
         passwordTokenRepository.save(passwordToken);
     }
+
+    public Optional<PasswordToken> findByUser(User user){
+        return passwordTokenRepository.findByUser(user);
+    }
+
+    public void delete(PasswordToken passwordToken){
+        passwordTokenRepository.delete(passwordToken);
+    }
 }

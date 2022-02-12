@@ -69,13 +69,13 @@ public class UserController {
 
     @CrossOrigin("*")
     @GetMapping("/recovery")
-    public ResponseEntity<String> recovery(@RequestParam(value = "email") String email) throws MessagingException, IOException {
+    public ResponseEntity<Boolean> recovery(@RequestParam(value = "email") String email) throws MessagingException, IOException {
         User user = userService.verifyIfEmailExists(email);
         if(user.getId() != null){
-            userService.passwordToken(user);
-            return ResponseEntity.ok("");
+            userService.changePasswordToken(user);
+            return ResponseEntity.ok().body(true);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
     }
 
     @CrossOrigin("*")

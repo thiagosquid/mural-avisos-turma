@@ -20,26 +20,38 @@ public class Mail {
     private final boolean AUTH = true;
     private final boolean STARTTLS = true;
 
-    public void send(User user, String url) throws AddressException, MessagingException, IOException {
+    public void sendEmail(User user, String url, String subject, String content) throws AddressException, MessagingException, IOException {
 
         Session session = Session.getDefaultInstance(setProperties());
 
         Message msg = new MimeMessage(setSession(setProperties()));
 
         msg.setSentDate(new Date());
-        msg.setSubject("Cadastro no Mural da Turma");
+        msg.setSubject(subject);
 
         msg.setFrom(new InternetAddress(EMAIL, true));
         msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(user.getEmail()));
 
         url = "<a href="+url+" target='_blank'>Clique Aqui</a>";
 
-        msg.setContent(user.getFirstName().concat(", bem-vindo(a) ao Mural da Turma!" +
-                "\nAcesse o link abaixo para confirmar sua conta.").concat(url), "text/html");
+        msg.setContent(content, "text/html");
 
         Transport transport = session.getTransport("smtp");
 
         Transport.send(msg);
+    }
+
+    public void sendConfirmationAccount(User user, String url) throws AddressException, MessagingException, IOException {
+        String subject = "Cadastro no Mural da Turma";
+        String content = user.getFirstName().concat(", bem-vindo(a) ao Mural da Turma!" +
+                "\nAcesse o link abaixo para confirmar sua conta.").concat(url);
+        this.sendEmail(user, url, subject, content);
+    }
+
+    public void sendRecoveryEmail(User user, String url) throws MessagingException, IOException {
+        String subject = "Recuperação de Senha";
+        String content = "Olá,  ".concat(user.getFirstName()).concat(". Acesse o link abaixo para alterar sua sua senha.\n").concat(url);
+        this.sendEmail(user, url, subject, content);
     }
 
     private Session setSession(Properties props) {
