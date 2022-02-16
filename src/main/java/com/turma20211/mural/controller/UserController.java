@@ -53,6 +53,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    @CrossOrigin("*")
     @PostMapping("/signup")
     public ResponseEntity<String> saveUser(@RequestBody User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException {
         user.setPassword(encoder.encode(user.getPassword()));

@@ -1,8 +1,10 @@
 package com.turma20211.mural.dto.request;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class PasswordRecoveryDto {
 
     private Long id;

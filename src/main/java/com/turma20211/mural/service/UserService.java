@@ -38,7 +38,18 @@ public class UserService {
     }
 
     public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException {
-        if (user.getEmail().contains("@academico.ifs.edu.br")) {
+        String[] email = user.getEmail().split("[.,@]");
+        int tam = email[1].length();
+        int tamLastName = user.getLastName().split(" ").length;
+        boolean sameFirstName = email[0].equals(user.getFirstName().toLowerCase());
+        boolean sameLastName = email[1].substring(0, tam - 3).equals(user.getLastName().split(" ")[tamLastName-1].toLowerCase());
+        boolean isNumber = false;
+        try{
+            isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) > 0;
+        }catch (Exception e){
+            isNumber = false;
+        }
+        if (user.getEmail().contains("@academico.ifs.edu.br") && sameFirstName && sameLastName && isNumber) {
             user.setUsername(user.getUsername().toLowerCase());
             user.setEmail(user.getEmail().toLowerCase());
             Optional<ConfirmationToken> ct = Optional.ofNullable(new ConfirmationToken());
