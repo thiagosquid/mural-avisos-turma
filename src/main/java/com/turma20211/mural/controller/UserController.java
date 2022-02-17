@@ -4,10 +4,7 @@ package com.turma20211.mural.controller;
 import com.turma20211.mural.dto.UserDto;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
-import com.turma20211.mural.exception.EmailAlreadyExistsException;
-import com.turma20211.mural.exception.UserInvalidEmailException;
-import com.turma20211.mural.exception.UserNotFoundException;
-import com.turma20211.mural.exception.UsernameAlreadyExistsException;
+import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.service.UserService;
@@ -42,49 +39,62 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getById(@PathVariable Long id) throws UserNotFoundException {
-        Optional<User> user = userService.findById(id);
-
-        if(user.isPresent()){
-
-            return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
+    public ResponseEntity<Object> getById(@PathVariable Long id) {
+        Optional<User> user = null;
+        try {
+            user = userService.findById(id);
+        } catch (UserNotFoundException e) {
+            e.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
     }
 
     @CrossOrigin("*")
     @PostMapping("/signup")
-    public ResponseEntity<String> saveUser(@RequestBody User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException {
+    public ResponseEntity<String> saveUser(@RequestBody User user) {
         user.setPassword(encoder.encode(user.getPassword()));
-        userService.save(user);
-
-        return ResponseEntity.ok("");
+        try {
+            userService.save(user);
+        } catch (UserInvalidEmailException | UsernameAlreadyExistsException | MessagingException | EmailAlreadyExistsException | IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (FirstNameInvalidException | LastNameInvalidException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        return ResponseEntity.ok("Registrado com sucesso. Verifique o email cadastrado para confirmar a conta!");
     }
 
     @CrossOrigin("*")
     @GetMapping("/confirm")
-    public String confirm (@RequestParam String token) throws UserNotFoundException {
+    public String confirm(@RequestParam String token) throws UserNotFoundException {
         return userService.confirmToken(token);
     }
 
     @CrossOrigin("*")
     @GetMapping("/recovery")
-    public ResponseEntity<Boolean> recovery(@RequestParam(value = "email") String email) throws MessagingException, IOException {
+    public ResponseEntity<Boolean> recovery(@RequestParam(value = "email") String email) {
         User user = userService.verifyIfEmailExists(email);
-        if(user.getId() != null){
-            userService.changePasswordToken(user);
-            return ResponseEntity.ok().body(true);
+        try {
+            if (user.getId() != null) {
+                userService.changePasswordToken(user);
+                return ResponseEntity.ok().body(true);
+            }
+        } catch (MessagingException | IOException e) {
+            e.printStackTrace();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
     }
 
     @CrossOrigin("*")
     @PostMapping("/recovery")
-    @ResponseStatus(HttpStatus.OK)
-    public void recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException {
+    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
-        userService.changePassword(passwordRecoveryDto);
+        try {
+            userService.changePassword(passwordRecoveryDto);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PostMapping("/verify")

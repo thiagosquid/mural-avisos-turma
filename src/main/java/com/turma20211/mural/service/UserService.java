@@ -1,10 +1,7 @@
 package com.turma20211.mural.service;
 
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
-import com.turma20211.mural.exception.EmailAlreadyExistsException;
-import com.turma20211.mural.exception.UserInvalidEmailException;
-import com.turma20211.mural.exception.UserNotFoundException;
-import com.turma20211.mural.exception.UsernameAlreadyExistsException;
+import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.ConfirmationToken;
 import com.turma20211.mural.model.PasswordToken;
 import com.turma20211.mural.model.User;
@@ -34,28 +31,41 @@ public class UserService {
     private PasswordTokenService passwordTokenService;
 
     public Optional<User> findById(Long id) throws UserNotFoundException {
-        return Optional.ofNullable(userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id)));
+        Optional<User> user = userRepository.findById(id);
+        if(user.isPresent()){
+            return user;
+        }else{
+            throw new UserNotFoundException(id);
+        }
     }
 
-    public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException {
-//        String[] email = user.getEmail().split("[.,@]");
-//        int tam = email[1].length();
-//        int tamLastName = user.getLastName().split(" ").length;
-//        boolean sameFirstName = email[0].equals(user.getFirstName().toLowerCase());
-//        boolean sameLastName = email[1].substring(0, tam - 3).equals(user.getLastName().split(" ")[tamLastName-1].toLowerCase());
-//        boolean isNumber = false;
-//        try{
-//            isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) > 0;
-//        }catch (Exception e){
-//            isNumber = false;
-//        }
-        if (user.getEmail().contains("@academico.ifs.edu.br") /*&& sameFirstName && sameLastName && isNumber*/) {
+    public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException, FirstNameInvalidException, LastNameInvalidException {
+        String[] email = user.getEmail().split("[.,@]");
+        int tam = email[1].length();
+        int tamLastName = user.getLastName().split(" ").length;
+        boolean sameFirstName = email[0].equals(user.getFirstName().toLowerCase());
+        boolean sameLastName = email[1].substring(0, tam - 3).equals(user.getLastName().split(" ")[tamLastName-1].toLowerCase());
+        boolean isNumber = false;
+        try{
+            isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) > 0;
+        }catch (Exception e){
+            isNumber = false;
+        }
+
+        if(!sameFirstName){
+            throw new FirstNameInvalidException(user.getFirstName(), user.getEmail());
+        }
+        if(!sameLastName){
+            throw new LastNameInvalidException(user.getLastName(), user.getEmail());
+        }
+
+        if (user.getEmail().contains("@academico.ifs.edu.br") && isNumber) {
             user.setUsername(user.getUsername().toLowerCase());
             user.setEmail(user.getEmail().toLowerCase());
             Optional<ConfirmationToken> ct = Optional.ofNullable(new ConfirmationToken());
 
             Optional<User> userExistent = userRepository.findByEmail(user.getEmail());
-            if(userExistent.isPresent()){
+            if (userExistent.isPresent()) {
                 ct = confirmationTokenService.findByUser(userExistent.get());
             }
             boolean existsUsername = userRepository.existsByUsername(user.getUsername());
@@ -66,7 +76,7 @@ public class UserService {
                 confirmationTokenService.delete(ct.get());
             } else if (existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt()))
                 throw new EmailAlreadyExistsException(user.getEmail());
-            else if(existsUsername)
+            else if (existsUsername)
                 throw new UsernameAlreadyExistsException(user.getUsername());
 
             User userSaved = userRepository.save(user);
@@ -78,21 +88,21 @@ public class UserService {
                     LocalDateTime.now(),
                     LocalDateTime.now().plusMinutes(15),
                     userSaved
-                    );
+            );
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
             String link = "";
-            if(System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")){
+            if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
                 link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
                 Mail mailer = new Mail();
                 mailer.sendConfirmationAccount(user, link);
-            }else{
+            } else {
                 link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
                 System.out.println(link);
             }
 
             return token;
-        }else{
+        } else {
             throw new UserInvalidEmailException();
         }
     }
@@ -101,7 +111,7 @@ public class UserService {
         User byId = verifyIfExists(user.getId());
         User byUsername = verifyIfExists(user.getUsername());
 
-        if(byId.getId() == byUsername.getId()){
+        if (byId.getId() == byUsername.getId()) {
             return userRepository.save(user);
         }
 
@@ -140,11 +150,11 @@ public class UserService {
 
         Optional<PasswordToken> pt = passwordTokenService.findByUser(user);
 
-        if(pt.isPresent()){
-            if(pt.get().getUser() != null && pt.get().getConfirmedAt() == null
-                    && pt.get().getExpiresAt().isAfter(LocalDateTime.now())){
+        if (pt.isPresent()) {
+            if (pt.get().getUser() != null && pt.get().getConfirmedAt() == null
+                    && pt.get().getExpiresAt().isAfter(LocalDateTime.now())) {
                 return "Verifique seu email para alterar a senha";
-            }else{
+            } else {
                 passwordTokenService.delete(pt.get());
             }
         }
@@ -160,11 +170,11 @@ public class UserService {
 
         passwordTokenService.savePasswordToken(passwordToken);
         String link = "";
-        if(System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")){
+        if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
             link = "http://projeto-mural-turma.vercel.app/recovery?token=" + token + "&id=" + user.getId();
             Mail mailer = new Mail();
             mailer.sendRecoveryEmail(user, link);
-        }else{
+        } else {
             link = "http://projeto-mural-turma.vercel.app/recovery?token=" + token + "&id=" + user.getId();
             System.out.println(link);
         }
@@ -195,19 +205,19 @@ public class UserService {
         return "Senha alterada com sucesso";
     }
 
-    public User verifyIfEmailExists(String email){
+    public User verifyIfEmailExists(String email) {
         return userRepository.findByEmail(email).orElse(new User());
     }
 
     private User verifyIfExists(Long id) throws UserNotFoundException {
-        return userRepository.findById(id).orElseThrow(()-> new UserNotFoundException(id));
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     private User verifyIfExists(String username) throws UserNotFoundException {
-        return userRepository.findByUsername(username).orElseThrow(()-> new UserNotFoundException(username));
+        return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
-    private void deleteByEmail(User user){
+    private void deleteByEmail(User user) {
         userRepository.delete(user);
     }
 }
