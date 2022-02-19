@@ -51,8 +51,22 @@ public class User {
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     @JsonIgnore
     private List<ConfirmationToken> tokenList = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    @JsonIgnore
+    private List<ConfirmationToken> tokenPasswordList = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "users_favorites_posts",
+            joinColumns = {
+                    @JoinColumn(name = "user_id", referencedColumnName = "id",
+                            nullable = false, updatable = false)},
+            inverseJoinColumns = {
+                    @JoinColumn(name = "post_id", referencedColumnName = "id",
+                            nullable = false, updatable = false)})
+    private List<Post> favoritesPosts = new ArrayList<>();
 
 }

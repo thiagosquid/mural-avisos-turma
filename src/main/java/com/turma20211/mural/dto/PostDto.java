@@ -1,6 +1,5 @@
 package com.turma20211.mural.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.turma20211.mural.model.Comment;
 import com.turma20211.mural.model.Tag;
 import com.turma20211.mural.model.User;
@@ -9,10 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -37,4 +34,5 @@ public class PostDto {
 
     private List<Comment> commentList = new ArrayList<>();
 
+    private List<User> usersFavorited = new ArrayList<>();
 }

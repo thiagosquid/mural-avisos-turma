@@ -15,7 +15,9 @@ public class UserMapper {
                 user.getLocked(),
                 user.getEnabled(),
                 user.getPostsList(),
-                user.getTokenList());
+                user.getTokenList(),
+                user.getTokenPasswordList(),
+                user.getFavoritesPosts());
 
         return userDto;
     }
@@ -31,7 +33,9 @@ public class UserMapper {
                 userDto.getLocked(),
                 userDto.getEnabled(),
                 userDto.getPostsList(),
-                userDto.getTokenList());
+                userDto.getTokenList(),
+                userDto.getTokenPasswordList(),
+                userDto.getFavoritesPosts());
 
         return user;
     }

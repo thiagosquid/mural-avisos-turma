@@ -45,4 +45,7 @@ public class Post {
     @JsonIgnore
     private List<Comment> commentList = new ArrayList<>();
 
+    @ManyToMany(mappedBy = "favoritesPosts", fetch = FetchType.LAZY)
+    private List<User> usersFavorited = new ArrayList<>();
+
 }

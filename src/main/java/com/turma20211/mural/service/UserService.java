@@ -171,11 +171,11 @@ public class UserService {
         passwordTokenService.savePasswordToken(passwordToken);
         String link = "";
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-            link = "http://projeto-mural-turma.vercel.app/recovery?token=" + token + "&id=" + user.getId();
+            link = "http://projeto-mural-turma.vercel.app/recovery_password?token=" + token + "&id=" + user.getId();
             Mail mailer = new Mail();
             mailer.sendRecoveryEmail(user, link);
         } else {
-            link = "http://projeto-mural-turma.vercel.app/recovery?token=" + token + "&id=" + user.getId();
+            link = "http://projeto-mural-turma.vercel.app/recovery_password?token=" + token + "&id=" + user.getId();
             System.out.println(link);
         }
 

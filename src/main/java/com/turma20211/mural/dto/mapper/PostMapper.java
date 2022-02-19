@@ -15,7 +15,8 @@ public class PostMapper {
                 post.getDateRegister(),
                 post.getTag(),
                 post.getUser(),
-                post.getCommentList());
+                post.getCommentList(),
+                post.getUsersFavorited());
 
         return postDto;
     }
@@ -28,7 +29,8 @@ public class PostMapper {
                 postDto.getDateRegister(),
                 postDto.getTag(),
                 postDto.getUser(),
-                postDto.getCommentList());
+                postDto.getCommentList(),
+                postDto.getUsersFavorited());
 
         return post;
     }

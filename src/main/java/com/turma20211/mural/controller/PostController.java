@@ -36,7 +36,7 @@ public class PostController {
     public ResponseEntity<PostDto> getById(@PathVariable Long postId){
         Optional<Post> post = postService.getById(postId);
         if(post.isPresent()){
-            return ResponseEntity.status(HttpStatus.FOUND).body(PostMapper.toDto(post.get()));
+            return ResponseEntity.status(HttpStatus.OK).body(PostMapper.toDto(post.get()));
         }
 
         return ResponseEntity.notFound().build();

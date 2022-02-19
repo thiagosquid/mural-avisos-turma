@@ -56,9 +56,7 @@ public class UserController {
         user.setPassword(encoder.encode(user.getPassword()));
         try {
             userService.save(user);
-        } catch (UserInvalidEmailException | UsernameAlreadyExistsException | MessagingException | EmailAlreadyExistsException | IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (FirstNameInvalidException | LastNameInvalidException e) {
+        } catch (UserInvalidEmailException | UsernameAlreadyExistsException | MessagingException | EmailAlreadyExistsException | IOException | FirstNameInvalidException | LastNameInvalidException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
         return ResponseEntity.ok("Registrado com sucesso. Verifique o email cadastrado para confirmar a conta!");
