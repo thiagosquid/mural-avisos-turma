@@ -188,13 +188,13 @@ public class UserService {
         PasswordToken passwordToken = passwordTokenService.getToken(passwordRecoveryDto.getToken());
 
         if (passwordToken.getConfirmedAt() != null) {
-            throw new ExpiredTokenException("Token Já utilizado");
+            throw new ExpiredTokenException("Esta solicitação de renovação de senha já foi utilizada. Solicite uma nova renovação de senha!");
         }
 
         LocalDateTime expiredAt = passwordToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new ExpiredTokenException("Token expirado");
+            throw new ExpiredTokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!");
         }
 
         passwordTokenService.setConfirmedAt(passwordToken);

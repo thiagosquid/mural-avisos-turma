@@ -90,7 +90,7 @@ public class UserController {
             userService.changePassword(passwordRecoveryDto);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (UserNotFoundException | ExpiredTokenException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
