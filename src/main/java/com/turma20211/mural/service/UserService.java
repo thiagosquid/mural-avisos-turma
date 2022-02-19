@@ -182,19 +182,19 @@ public class UserService {
         return "";
     }
 
-    public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException {
+    public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException, ExpiredTokenException {
         User user = userRepository.getById(passwordRecoveryDto.getId());
 
         PasswordToken passwordToken = passwordTokenService.getToken(passwordRecoveryDto.getToken());
 
         if (passwordToken.getConfirmedAt() != null) {
-            return "Token já utilizado";
+            throw new ExpiredTokenException("Token Já utilizado");
         }
 
         LocalDateTime expiredAt = passwordToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token expirado");
+            throw new ExpiredTokenException("Token expirado");
         }
 
         passwordTokenService.setConfirmedAt(passwordToken);

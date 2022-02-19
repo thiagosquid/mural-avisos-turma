@@ -1,7 +1,6 @@
 package com.turma20211.mural.controller;
 
 
-import com.turma20211.mural.dto.UserDto;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
@@ -85,12 +84,12 @@ public class UserController {
 
     @CrossOrigin("*")
     @PostMapping("/recovery")
-    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException {
+    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto){
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
         try {
             userService.changePassword(passwordRecoveryDto);
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (UserNotFoundException e) {
+        } catch (UserNotFoundException | ExpiredTokenException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
