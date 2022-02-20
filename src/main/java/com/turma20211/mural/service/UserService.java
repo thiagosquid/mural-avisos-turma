@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.text.Collator;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,37 +34,43 @@ public class UserService {
 
     public Optional<User> findById(Long id) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()){
+        if (user.isPresent()) {
             return user;
-        }else{
+        } else {
             throw new UserNotFoundException(id);
         }
     }
 
     public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException, FirstNameInvalidException, LastNameInvalidException {
+
+        Collator collator = Collator.getInstance(Locale.forLanguageTag("pt_BR"));
+        collator.setStrength(Collator.PRIMARY);
+
         String[] email = user.getEmail().split("[.,@]");
+        String emailFirstName = email[0];
         int tam = email[1].length();
+        String emailLastName = email[1].substring(0, tam - 3);
+
         int tamLastName = user.getLastName().split(" ").length;
-        boolean sameFirstName = email[0].equals(user.getFirstName().toLowerCase());
-        boolean sameLastName = email[1].substring(0, tam - 3).equals(user.getLastName().split(" ")[tamLastName-1].toLowerCase());
+        boolean sameFirstName = collator.compare(emailFirstName, user.getFirstName()) == 0;
+        boolean sameLastName = collator.compare(emailLastName, user.getLastName().split(" ")[tamLastName - 1]) == 0;
         boolean isNumber = false;
-        try{
-            isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) > 0;
-        }catch (Exception e){
-            isNumber = false;
+        try {
+            isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) >= 0;
+        } catch (Exception e) {
         }
 
-        if(!sameFirstName){
-            throw new FirstNameInvalidException(user.getFirstName(), user.getEmail());
+        if (!sameFirstName) {
+            throw new FirstNameInvalidException();
         }
-        if(!sameLastName){
-            throw new LastNameInvalidException(user.getLastName(), user.getEmail());
+        if (!sameLastName) {
+            throw new LastNameInvalidException();
         }
 
         if (user.getEmail().contains("@academico.ifs.edu.br") && isNumber) {
             user.setUsername(user.getUsername().toLowerCase());
             user.setEmail(user.getEmail().toLowerCase());
-            Optional<ConfirmationToken> ct = Optional.ofNullable(new ConfirmationToken());
+            Optional<ConfirmationToken> ct = Optional.of(new ConfirmationToken());
 
             Optional<User> userExistent = userRepository.findByEmail(user.getEmail());
             if (userExistent.isPresent()) {
@@ -71,13 +79,11 @@ public class UserService {
             boolean existsUsername = userRepository.existsByUsername(user.getUsername());
             boolean existsEmail = userRepository.existsByEmail(user.getEmail());
 
-            if (existsEmail && LocalDateTime.now().isAfter(ct.get().getExpiresAt()) && ct.isPresent()) {
-                deleteByEmail(userExistent.get());
-                confirmationTokenService.delete(ct.get());
-            } else if (existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt()))
-                throw new EmailAlreadyExistsException(user.getEmail());
-            else if (existsUsername)
+            if (existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt())) {
+                throw new EmailAlreadyExistsException();
+            } else if (existsUsername) {
                 throw new UsernameAlreadyExistsException(user.getUsername());
+            }
 
             User userSaved = userRepository.save(user);
 
@@ -91,16 +97,7 @@ public class UserService {
             );
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            String link = "";
-            if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-                link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
-                Mail mailer = new Mail();
-                mailer.sendConfirmationAccount(user, link);
-            } else {
-                link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
-                System.out.println(link);
-            }
-
+            sendEmailConfirmation(user, token);
             return token;
         } else {
             throw new UserInvalidEmailException();
@@ -118,11 +115,11 @@ public class UserService {
         return new User();
     }
 
-    public String confirmToken(String token) throws UserNotFoundException {
+    public String confirmToken(String token) throws UserNotFoundException, TokenException, MessagingException, IOException {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->
-                        new IllegalStateException("Token não encontrado"));
+                        new TokenException("Token não encontrado."));
 
         if (confirmationToken.getConfirmedAt() != null) {
             return "<h1 style=\"color=red; weight=bold; margin: auto\">Sua Conta já foi verificada</h1>" +
@@ -131,13 +128,20 @@ public class UserService {
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
+        User user = confirmationToken.getUser();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("Token expirado");
+            String newToken = UUID.randomUUID().toString();
+            confirmationToken.setToken(newToken);
+            confirmationToken.setCreatedAt(LocalDateTime.now());
+            confirmationToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+            confirmationTokenService.saveConfirmationToken(confirmationToken);
+            sendEmailConfirmation(user, newToken);
+
+            throw new TokenException("Solicitação expirada. Você receberá novo email de confirmação");
         }
 
         confirmationTokenService.setConfirmedAt(confirmationToken);
-        User user = confirmationToken.getUser();
 
         user.setEnabled(true);
         update(user);
@@ -169,32 +173,24 @@ public class UserService {
         );
 
         passwordTokenService.savePasswordToken(passwordToken);
-        String link = "";
-        if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-            link = "http://projeto-mural-turma.vercel.app/recovery_password?token=" + token + "&id=" + user.getId();
-            Mail mailer = new Mail();
-            mailer.sendRecoveryEmail(user, link);
-        } else {
-            link = "http://projeto-mural-turma.vercel.app/recovery_password?token=" + token + "&id=" + user.getId();
-            System.out.println(link);
-        }
 
+        sendEmailConfirmation(user, token);
         return "";
     }
 
-    public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException, ExpiredTokenException {
+    public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException, TokenException {
         User user = userRepository.getById(passwordRecoveryDto.getId());
 
         PasswordToken passwordToken = passwordTokenService.getToken(passwordRecoveryDto.getToken());
 
         if (passwordToken.getConfirmedAt() != null) {
-            throw new ExpiredTokenException("Esta solicitação de renovação de senha já foi utilizada. Solicite uma nova renovação de senha!");
+            throw new TokenException("Esta solicitação de renovação de senha está expirada. Para alterá-la, solicite novamente!");
         }
 
         LocalDateTime expiredAt = passwordToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new ExpiredTokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!");
+            throw new TokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!");
         }
 
         passwordTokenService.setConfirmedAt(passwordToken);
@@ -219,5 +215,17 @@ public class UserService {
 
     private void deleteByEmail(User user) {
         userRepository.delete(user);
+    }
+
+    private void sendEmailConfirmation(User user, String token) throws MessagingException, IOException {
+        String link = "";
+        if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
+            link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
+            Mail mailer = new Mail();
+            mailer.sendConfirmationAccount(user, link);
+        } else {
+            link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
+            System.out.println(link);
+        }
     }
 }

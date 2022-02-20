@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class EmailAlreadyExistsException extends Exception{
 
-    public EmailAlreadyExistsException(String email) {
-        super(String.format("Email "+ email + " já existe. Tente outro."));
+    public EmailAlreadyExistsException() {
+        super(String.format("Já existe um usuário cadastrado com este e-mail. Por favor, tente outro e-mail!"));
     }
 }

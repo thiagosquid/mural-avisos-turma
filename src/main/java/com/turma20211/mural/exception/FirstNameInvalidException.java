@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class FirstNameInvalidException extends Exception{
 
-    public FirstNameInvalidException(String firstName, String firstNameEmail) {
-        super(String.format("Primeiro nome {"+ firstName + "} está diferente do email {" + firstNameEmail +"}"));
+    public FirstNameInvalidException() {
+        super(String.format("O nome não corresponde ao do e-mail! Por favor, verifique o nome ou e-mail."));
     }
 }

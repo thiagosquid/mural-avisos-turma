@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class LastNameInvalidException extends Exception{
 
-    public LastNameInvalidException(String firstName, String lastNameEmail) {
-        super(String.format("Ultimo nome {"+ firstName + "} está diferente do email {" + lastNameEmail +"}"));
+    public LastNameInvalidException() {
+        super(String.format("O sobrenome não corresponde ao do e-mail! Por favor, verifique o sobrenome ou e-mail."));
     }
 }

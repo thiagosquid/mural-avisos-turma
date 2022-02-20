@@ -63,8 +63,16 @@ public class UserController {
 
     @CrossOrigin("*")
     @GetMapping("/confirm")
-    public String confirm(@RequestParam String token) throws UserNotFoundException {
-        return userService.confirmToken(token);
+    public ResponseEntity<String> confirm(@RequestParam String token) {
+        String confirmation = null;
+        try{
+            confirmation = userService.confirmToken(token);
+        }catch (UserNotFoundException | TokenException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (MessagingException | IOException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok().body(confirmation);
     }
 
     @CrossOrigin("*")
@@ -89,7 +97,7 @@ public class UserController {
         try {
             userService.changePassword(passwordRecoveryDto);
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (UserNotFoundException | ExpiredTokenException e) {
+        } catch (UserNotFoundException | TokenException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
