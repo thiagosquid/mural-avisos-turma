@@ -190,7 +190,7 @@ public class UserService {
         passwordTokenService.savePasswordToken(passwordToken);
         String link = "http://projeto-mural-turma.vercel.app/recovery_password?token=";
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-            link = link + token + "?id=" + user.getId();
+            link = link + token + "&id=" + user.getId();
             Mail mailer = new Mail();
             mailer.sendConfirmationAccount(user, link);
         } else {
