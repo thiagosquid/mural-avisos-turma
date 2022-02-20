@@ -97,7 +97,15 @@ public class UserService {
             );
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            sendEmailConfirmation(user, token);
+            String link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=";
+            if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
+                link = link + token;
+                Mail mailer = new Mail();
+                mailer.sendConfirmationAccount(user, link);
+            } else {
+                link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
+                System.out.println(link);
+            }
             return token;
         } else {
             throw new UserInvalidEmailException();
@@ -136,8 +144,15 @@ public class UserService {
             confirmationToken.setCreatedAt(LocalDateTime.now());
             confirmationToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            sendEmailConfirmation(user, newToken);
-
+            String link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=";
+            if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
+                link = link + token;
+                Mail mailer = new Mail();
+                mailer.sendConfirmationAccount(user, link);
+            } else {
+                link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
+                System.out.println(link);
+            }
             throw new TokenException("Solicitação expirada. Você receberá novo email de confirmação");
         }
 
@@ -173,8 +188,15 @@ public class UserService {
         );
 
         passwordTokenService.savePasswordToken(passwordToken);
-
-        sendEmailConfirmation(user, token);
+        String link = "http://projeto-mural-turma.vercel.app/confirm?token=";
+        if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
+            link = link + token + "?id=" + user.getId();
+            Mail mailer = new Mail();
+            mailer.sendConfirmationAccount(user, link);
+        } else {
+            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "?id=" + user.getId();
+            System.out.println(link);
+        }
         return "";
     }
 
@@ -217,10 +239,10 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    private void sendEmailConfirmation(User user, String token) throws MessagingException, IOException {
-        String link = "";
+    private void sendEmailConfirmation(User user, String token, String link) throws MessagingException, IOException {
+
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-            link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=" + token;
+            link = link + token;
             Mail mailer = new Mail();
             mailer.sendConfirmationAccount(user, link);
         } else {
