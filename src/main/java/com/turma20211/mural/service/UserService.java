@@ -194,7 +194,7 @@ public class UserService {
             Mail mailer = new Mail();
             mailer.sendConfirmationAccount(user, link);
         } else {
-            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "?id=" + user.getId();
+            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
             System.out.println(link);
         }
         return "";
