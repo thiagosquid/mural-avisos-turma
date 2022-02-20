@@ -192,7 +192,7 @@ public class UserService {
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
             link = link + token + "&id=" + user.getId();
             Mail mailer = new Mail();
-            mailer.sendConfirmationAccount(user, link);
+            mailer.sendRecoveryEmail(user, link);
         } else {
             link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
             System.out.println(link);
