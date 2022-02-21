@@ -50,7 +50,7 @@ public class Mail {
 
     public void sendRecoveryEmail(User user, String url) throws MessagingException, IOException {
         String subject = "Recuperação de Senha - " + user.getFirstName() + " " + user.getLastName();
-        String content = "Olá,  ".concat(user.getFirstName()).concat(". Acesse o link abaixo para alterar sua sua senha.\n ").concat(url);
+        String content = "Olá,  ".concat(user.getFirstName()).concat(", você solicitou recuperação de senha para sua conta com nome de usuário ").concat(user.getUsername()).concat(". Acesse o link abaixo para alterar sua sua senha.\n ").concat(url);
         this.sendEmail(user, url, subject, content);
     }
 
