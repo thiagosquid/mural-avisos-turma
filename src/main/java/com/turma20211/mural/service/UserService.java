@@ -68,7 +68,7 @@ public class UserService {
         }
 
         if (user.getEmail().contains("@academico.ifs.edu.br") && isNumber) {
-            user.setUsername(user.getUsername().toLowerCase());
+            user.setUsername(user.getUsername());
             user.setEmail(user.getEmail().toLowerCase());
             Optional<ConfirmationToken> ct = Optional.of(new ConfirmationToken());
 
@@ -146,11 +146,11 @@ public class UserService {
             confirmationTokenService.saveConfirmationToken(confirmationToken);
             String link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=";
             if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-                link = link + token;
+                link = link + newToken;
                 Mail mailer = new Mail();
                 mailer.sendConfirmationAccount(user, link);
             } else {
-                link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
+                link = "http://localhost:8080/api/v1/user/confirm?token=" + newToken;
                 System.out.println(link);
             }
             throw new TokenException("Solicitação expirada. Você receberá novo email de confirmação");
