@@ -42,29 +42,35 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException, UsernameNotFoundException {
+
+        User user = null;
         try {
-
-            User user = new ObjectMapper()
+            user = new ObjectMapper()
                     .readValue(request.getInputStream(), User.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
                     user.getUsername(),
                     user.getPassword(),
                     new ArrayList<>()
             );
-            return authenticationManager.authenticate(authentication);
 
-        } catch (IOException e) {
-            Map<String, String> res = new HashMap<>();
-            res.put("message", "Usuário ou senha incorretos");
-            response.setContentType("application/json");
-            try {
-                new ObjectMapper().writeValue(response.getOutputStream(), res);
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            try{
+                return authenticationManager.authenticate(authentication);
+            }catch (Exception e){
+                e.getMessage();
+                Map<String, String> res = new HashMap<>();
+                res.put("message", "Usuário ou senha incorretos");
+                response.setContentType("application/json");
+                try {
+                    new ObjectMapper().writeValue(response.getOutputStream(), res);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                throw new RuntimeException("Falha ao autenticar usuario");
             }
-            throw new RuntimeException("Falha ao autenticar usuario", e);
-        }
 
     }
 
