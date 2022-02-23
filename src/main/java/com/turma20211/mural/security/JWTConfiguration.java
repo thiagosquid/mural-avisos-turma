@@ -36,10 +36,10 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/login","/api/v1/user/signup", "/api/v1/user/recovery")
             .permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/user/recovery",
-                        "/api/v1/user/confirm").permitAll()
+                        "/api/v1/user/confirm", "/api/v1/user/refreshtoken").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilter(new JWTAutenticarFilter(passwordEncoder, authenticationManager()))
+                .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))
                 .addFilter(new JWTValidateFilter(authenticationManager()))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 

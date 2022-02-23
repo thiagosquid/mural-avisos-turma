@@ -1,23 +1,40 @@
 package com.turma20211.mural.controller;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.turma20211.mural.data.UserDetailData;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
+import com.turma20211.mural.security.JWTAutenticationFilter;
+import com.turma20211.mural.security.JWTValidateFilter;
 import com.turma20211.mural.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
+import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
+
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
@@ -116,6 +133,56 @@ public class UserController {
 
         HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
         return ResponseEntity.status(status).body(valid);
+    }
+
+    @GetMapping("/refreshtoken")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String authorizationHeader = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE);
+
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            try{
+                String refresh_token = authorizationHeader.substring("Bearer ".length());
+                Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
+                JWTVerifier verifier = JWT.require(algorithm).build();
+                DecodedJWT decodedJWT = verifier.verify(refresh_token);
+                String username = decodedJWT.getSubject();
+                Long id = Long.parseLong(decodedJWT.getClaim("userId").toString());
+                User user = userService.findById(id).get();
+                String tokenId = decodedJWT.getId();
+
+                if(!tokenId.equals("1")){
+                    throw new RuntimeException("Esse não é um refresh token");
+                }
+                String access_token = JWT.create()
+                        .withSubject(user.getUsername())
+                        .withClaim("userId", user.getId())
+                        .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
+                        .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
+
+                refresh_token = JWT.create()
+                        .withSubject(user.getUsername())
+                        .withClaim("userId", user.getId())
+                        .withClaim("refresh", "refresh")
+                        .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
+                        .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
+
+                Map<String, String> tokens = new HashMap<>();
+                tokens.put("access_token", access_token);
+                tokens.put("refresh_token", refresh_token);
+                response.setContentType("application/json");
+                new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+            }catch (Exception e){
+                log.error("Erro em: {}", e.getMessage());
+                response.setHeader("error", e.getMessage());
+                response.setStatus(403);
+                Map<String, String> error = new HashMap<>();
+                error.put("error_message", e.getMessage());
+                response.setContentType("application/json");
+                new ObjectMapper().writeValue(response.getOutputStream(), error);
+            }
+        }else{
+            throw new RuntimeException("Refresh token faltando");
+        }
     }
 
 }
