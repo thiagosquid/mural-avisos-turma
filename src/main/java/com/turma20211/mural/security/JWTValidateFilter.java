@@ -3,6 +3,10 @@ package com.turma20211.mural.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.turma20211.mural.controller.UserController;
+import com.turma20211.mural.repository.UserRepository;
+import com.turma20211.mural.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,13 +19,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 public class JWTValidateFilter extends BasicAuthenticationFilter {
 
     public static final String HEADER_ATTRIBUTE = "Authorization";
     public static final String PREFIX_ATTRIBUTE = "Bearer ";
+
+    @Autowired
+    private UserService userService;
 
     public JWTValidateFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
@@ -53,20 +59,21 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
     private UsernamePasswordAuthenticationToken getAuthenticationToken(String token) {
 
-        String user = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
+        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
                 .build()
-                .verify(token)
-                .getSubject();
-        String role = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
-                .build()
-                .verify(token).getClaim("role").asString();
+                .verify(token);
+
+        String username = decodedJWT.getSubject();
+        String role = decodedJWT.getClaim("role").asString();
+
+
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
         roles.add(new SimpleGrantedAuthority(role));
 
-        if (user == null) {
+        if (username == null) {
             return null;
         }
-        var tk = new UsernamePasswordAuthenticationToken(user,null, roles);
+        var tk = new UsernamePasswordAuthenticationToken(username,null, roles);
         return tk;
     }
 
