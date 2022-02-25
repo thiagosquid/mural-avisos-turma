@@ -1,6 +1,7 @@
 package com.turma20211.mural.security;
 
 import com.turma20211.mural.service.UserDetailServiceImpl;
+import com.turma20211.mural.utils.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -34,9 +36,10 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.POST,"/login","/api/v1/user/signup", "/api/v1/user/recovery")
-            .permitAll()
+                .permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/user/recovery",
                         "/api/v1/user/confirm", "/api/v1/user/refreshtoken").permitAll()
+                .antMatchers("/api/v1/user/setadmin/**","/api/v1/user/all").hasAuthority("SUPERUSER")
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))

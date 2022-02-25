@@ -8,6 +8,7 @@ import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.utils.Mail;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@AllArgsConstructor @Slf4j
 public class UserService {
 
     @Autowired
@@ -86,7 +87,7 @@ public class UserService {
             }
 
             User userSaved = userRepository.save(user);
-
+            log.info("Saving a new user!");
             String token = UUID.randomUUID().toString();
 
             ConfirmationToken confirmationToken = new ConfirmationToken(

@@ -3,6 +3,7 @@ package com.turma20211.mural.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import com.turma20211.mural.utils.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,6 +48,9 @@ public class User {
     @JsonIgnore
     private Boolean enabled = false;
 
+    @Column
+    private String role = Role.NORMAL.getValue();
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();
@@ -68,5 +72,15 @@ public class User {
                     @JoinColumn(name = "post_id", referencedColumnName = "id",
                             nullable = false, updatable = false)})
     private List<Post> favoritesPosts = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "users_class",
+            joinColumns = {
+                    @JoinColumn(name = "user_id", referencedColumnName = "id",
+                            nullable = false)},
+            inverseJoinColumns = {
+                    @JoinColumn(name = "class_id", referencedColumnName = "id",
+                            nullable = false)})
+    private List<Class> classList = new ArrayList<>();
 
 }

@@ -17,9 +17,11 @@ import com.turma20211.mural.security.JWTValidateFilter;
 import com.turma20211.mural.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
@@ -64,6 +67,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
+    }
+
+    @PostMapping("/setadmin/{id}")
+    public void teste(@PathVariable Long id){
+
+        try {
+            User user = userService.findById(id).get();
+            user.setRole("ADMIN");
+            userService.update(user);
+        } catch (UserNotFoundException e) {
+            e.printStackTrace();
+        }
+        System.out.println(id);
     }
 
     @CrossOrigin("*")
@@ -141,10 +157,10 @@ public class UserController {
 
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             try{
-                String refresh_token = authorizationHeader.substring("Bearer ".length());
+                String refreshToken = authorizationHeader.substring("Bearer ".length());
                 Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
                 JWTVerifier verifier = JWT.require(algorithm).build();
-                DecodedJWT decodedJWT = verifier.verify(refresh_token);
+                DecodedJWT decodedJWT = verifier.verify(refreshToken);
                 String username = decodedJWT.getSubject();
                 Long id = Long.parseLong(decodedJWT.getClaim("userId").toString());
                 User user = userService.findById(id).get();
@@ -156,19 +172,21 @@ public class UserController {
                 String access_token = JWT.create()
                         .withSubject(user.getUsername())
                         .withClaim("userId", user.getId())
+                        .withClaim("role", user.getRole())
                         .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                         .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
-                refresh_token = JWT.create()
+                refreshToken = JWT.create()
                         .withSubject(user.getUsername())
                         .withClaim("userId", user.getId())
-                        .withClaim("refresh", "refresh")
+                        .withJWTId(String.valueOf(1))
+                        .withClaim("role", user.getRole())
                         .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
                         .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
                 Map<String, String> tokens = new HashMap<>();
                 tokens.put("access_token", access_token);
-                tokens.put("refresh_token", refresh_token);
+                tokens.put("refresh_token", refreshToken);
                 response.setContentType("application/json");
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             }catch (Exception e){

@@ -9,6 +9,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -18,10 +20,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -51,10 +51,13 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
             e.printStackTrace();
         }
 
+        Collection<SimpleGrantedAuthority> authority = new ArrayList<>();
+        authority.add(new SimpleGrantedAuthority(user.getRole()));
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                     user.getUsername(),
                     user.getPassword(),
-                    new ArrayList<>()
+                    authority
             );
 
             try{
@@ -85,6 +88,7 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         String access_token = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
+                .withClaim("role", userData.getRole())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
@@ -92,6 +96,7 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
                 .withJWTId(String.valueOf(1))
+                .withClaim("role", userData.getRole())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
@@ -100,8 +105,6 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         tokens.put("refresh_token", refresh_token);
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-//        response.getWriter().write(token);
-//        response.getWriter().flush();
     }
 
 }
