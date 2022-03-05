@@ -10,10 +10,11 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @NoArgsConstructor
+@Table(name = "tb_confirmation_token")
 public class ConfirmationToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)

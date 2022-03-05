@@ -18,7 +18,7 @@ import java.util.Objects;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "usuarios") //alterado o nome pq estava dando conflito no banco da AWS
+@Table(name = "tb_user") //alterado o nome pq estava dando conflito no banco da AWS
 @JsonRootName(value = "user")
 public class User {
 
@@ -64,7 +64,7 @@ public class User {
     private List<ConfirmationToken> tokenList = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "users_favorites_posts",
+    @JoinTable(name = "tb_users_favorites_posts",
             joinColumns = {
                     @JoinColumn(name = "user_id", referencedColumnName = "id",
                             nullable = false, updatable = false)},
@@ -75,7 +75,7 @@ public class User {
     private List<Post> favoritesPosts = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "users_classes",
+    @JoinTable(name = "tb_users_classes",
             joinColumns = {
                     @JoinColumn(name = "user_id", referencedColumnName = "id",
                             nullable = false)},

@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonRootName(value = "post")
+@Table(name = "tb_post")
 public class Post {
 
     @Id
@@ -40,6 +41,10 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "class_id", nullable = false)
+    private Class aClass;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     @JsonIgnore

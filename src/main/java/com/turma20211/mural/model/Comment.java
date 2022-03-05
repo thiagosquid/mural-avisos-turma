@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonRootName(value = "comment", namespace = "comment")
+@Table(name = "tb_comment")
 public class Comment {
 
     @Id
