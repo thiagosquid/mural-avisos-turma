@@ -17,7 +17,6 @@ public class UserMapper {
                 user.getRole(),
                 user.getPostsList(),
                 user.getTokenList(),
-                user.getTokenPasswordList(),
                 user.getFavoritesPosts(),
                 user.getClassList());
 
@@ -37,7 +36,6 @@ public class UserMapper {
                 userDto.getRole(),
                 userDto.getPostsList(),
                 userDto.getTokenList(),
-                userDto.getTokenPasswordList(),
                 userDto.getFavoritesPosts(),
                 userDto.getClassList());
 

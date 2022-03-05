@@ -34,9 +34,6 @@ public class UserDto {
     @JsonIgnore
     private List<ConfirmationToken> tokenList = new ArrayList<>();
 
-    @JsonIgnore
-    private List<ConfirmationToken> tokenPasswordList = new ArrayList<>();
-
     private List<Post> favoritesPosts = new ArrayList<>();
 
     private List<Class> classList = new ArrayList<>();

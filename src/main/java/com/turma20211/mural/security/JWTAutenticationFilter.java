@@ -9,9 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -21,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -38,10 +35,9 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         this.authenticationManager = authenticationManager;
     }
 
-
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
-                                                HttpServletResponse response) throws AuthenticationException, UsernameNotFoundException {
+                                                HttpServletResponse response) throws AuthenticationException {
 
         User user = null;
         try {
@@ -55,26 +51,25 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         authority.add(new SimpleGrantedAuthority(user.getRole()));
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    user.getUsername(),
-                    user.getPassword(),
-                    authority
-            );
+                user.getUsername(),
+                user.getPassword(),
+                authority
+        );
 
-            try{
-                return authenticationManager.authenticate(authentication);
-            }catch (Exception e){
-                e.getMessage();
-                Map<String, String> res = new HashMap<>();
-                res.put("message", "Usuário ou senha incorretos");
-                response.setContentType("application/json");
-                try {
-                    new ObjectMapper().writeValue(response.getOutputStream(), res);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                throw new RuntimeException("Falha ao autenticar usuario");
+        try {
+            return authenticationManager.authenticate(authentication);
+        } catch (Exception e) {
+            e.getMessage();
+            Map<String, String> res = new HashMap<>();
+            res.put("message", "Usuário ou senha incorretos");
+            response.setContentType("application/json");
+            try {
+                new ObjectMapper().writeValue(response.getOutputStream(), res);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
-
+            throw new RuntimeException("Falha ao autenticar usuario");
+        }
     }
 
     @Override

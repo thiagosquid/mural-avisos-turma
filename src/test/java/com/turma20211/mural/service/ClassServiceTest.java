@@ -32,7 +32,7 @@ class ClassServiceTest {
         //then
         Class createdClass = classService.create(expectedSavedClass);
 
-        assertEquals(expectedSavedClass.getName(), createdClass.getName());
+        assertEquals(expectedSavedClass.getCode(), createdClass.getCode());
 
     }
 

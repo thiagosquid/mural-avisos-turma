@@ -5,18 +5,14 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.User;
-import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.security.JWTValidateFilter;
 import com.turma20211.mural.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,13 +22,16 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
 
 @Slf4j
 @RestController
+@CrossOrigin("*")
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
 
@@ -62,16 +61,23 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
     }
 
-    @PostMapping("/setadmin/{id}")
-    public void setAdmin(@PathVariable Long id){
+    @PostMapping("/set-admin/{id}")
+    public void setAdmin(@PathVariable Long id, HttpServletRequest request,HttpServletResponse response) throws IOException {
         try {
             User user = userService.findById(id).get();
             user.setRole("ADMIN");
+            String token = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE).substring("Bearer ".length());
+            Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
+            JWTVerifier verifier = JWT.require(algorithm).build();
+            DecodedJWT decodedJWT = verifier.verify(token);
+            Long idSuperUser = Long.parseLong(decodedJWT.getClaim("userId").toString());
+            User superUser = userService.findById(idSuperUser).get();
             userService.update(user);
+            log.info(String.format("O usuário %s alterou a role do usuário %s para ADMIN", superUser.getUsername(), user.getUsername()));
         } catch (UserNotFoundException e) {
-            e.printStackTrace();
+            response.setStatus(404);
+            response.sendError(1,"Usuário não encontrado");
         }
-        System.out.println(id);
     }
 
     @CrossOrigin("*")
@@ -120,8 +126,8 @@ public class UserController {
     public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto){
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
         try {
-            userService.changePassword(passwordRecoveryDto);
-            return ResponseEntity.status(HttpStatus.OK).build();
+            String res = userService.changePassword(passwordRecoveryDto);
+            return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (UserNotFoundException | TokenException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }

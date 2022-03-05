@@ -26,22 +26,22 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, length = 20)
+    @Column(unique = true, length = 25)
     private String username;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @Column(nullable = false, length = 25)
+    @Column(nullable = false, length = 20)
     private String firstName;
 
     @Column(nullable = false, length = 60)
     private String lastName;
 
-    @Column(unique = true, length = 60)
+    @Column(unique = true, length = 80)
     private String email;
 
-    @Column
+    @Column(length = 100)
     private String avatar;
 
     @JsonIgnore
@@ -50,8 +50,8 @@ public class User {
     @JsonIgnore
     private Boolean enabled = false;
 
-    @Column
-    private String role = Role.NORMAL.getValue();
+    @Column(length = 25)
+    private String role = Role.USER.getValue();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
@@ -62,11 +62,6 @@ public class User {
     @JsonIgnore
     @ToString.Exclude
     private List<ConfirmationToken> tokenList = new ArrayList<>();
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
-    @JsonIgnore
-    @ToString.Exclude
-    private List<ConfirmationToken> tokenPasswordList = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "users_favorites_posts",

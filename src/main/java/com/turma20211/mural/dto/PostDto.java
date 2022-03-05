@@ -26,7 +26,7 @@ public class PostDto {
 
     private LocalDateTime deadline;
 
-    private LocalDateTime dateRegister;
+    private LocalDateTime createdAt;
 
     private Tag tag;
 

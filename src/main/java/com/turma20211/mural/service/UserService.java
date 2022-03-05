@@ -7,7 +7,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.ConfirmationToken;
-import com.turma20211.mural.model.PasswordToken;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.utils.Mail;
@@ -31,7 +30,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ConfirmationTokenService confirmationTokenService;
-    private final PasswordTokenService passwordTokenService;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -57,9 +55,12 @@ public class UserService {
         String emailLastName = email[1].substring(0, tam - 3);
 
         int tamLastName = user.getLastName().split(" ").length;
+        //verifica se o primeiro nome é igual ao primeiro nome do email
         boolean sameFirstName = collator.compare(emailFirstName, user.getFirstName()) == 0;
+        //verifica se o ultimo nome é igual ao ultimo nome do email
         boolean sameLastName = collator.compare(emailLastName, user.getLastName().split(" ")[tamLastName - 1]) == 0;
         boolean isNumber = false;
+        //verifica se os 3 digitos antes da @ são números
         try {
             isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) >= 0;
         } catch (Exception e) {
@@ -84,14 +85,14 @@ public class UserService {
             boolean existsUsername = userRepository.existsByUsername(user.getUsername());
             boolean existsEmail = userRepository.existsByEmail(user.getEmail());
 
-            if (existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt())) {
+            if (ct.isPresent() && existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt())) {
                 throw new EmailAlreadyExistsException();
             } else if (existsUsername) {
                 throw new UsernameAlreadyExistsException(user.getUsername());
             }
 
             User userSaved = userRepository.save(user);
-            log.info("Saving a new user!");
+            log.info(String.format("Salvando novo usuário como id: %s", userSaved.getId()));
             String token = UUID.randomUUID().toString();
 
             ConfirmationToken confirmationToken = new ConfirmationToken(
@@ -172,27 +173,27 @@ public class UserService {
 
     public String changePasswordToken(User user) throws MessagingException, IOException {
 
-        Optional<PasswordToken> pt = passwordTokenService.findByUser(user);
+        Optional<ConfirmationToken> pt = confirmationTokenService.findByUserAndConfirmedAtIsNull(user);
 
         if (pt.isPresent()) {
             if (pt.get().getUser() != null && pt.get().getConfirmedAt() == null
                     && pt.get().getExpiresAt().isAfter(LocalDateTime.now())) {
                 return "Verifique seu email para alterar a senha";
             } else {
-                passwordTokenService.delete(pt.get());
+                confirmationTokenService.delete(pt.get());
             }
         }
 
         String token = UUID.randomUUID().toString();
 
-        PasswordToken passwordToken = new PasswordToken(
+        ConfirmationToken confirmationToken = new ConfirmationToken(
                 token,
                 LocalDateTime.now(),
                 LocalDateTime.now().plusMinutes(15),
                 user
         );
 
-        passwordTokenService.savePasswordToken(passwordToken);
+        confirmationTokenService.saveConfirmationToken(confirmationToken);
         String link = "http://projeto-mural-turma.vercel.app/recovery_password?token=";
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
             link = link + token + "&id=" + user.getId();
@@ -202,25 +203,25 @@ public class UserService {
             link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
             System.out.println(link);
         }
-        return "";
+        return "Um link para alterar a senha foi enviado para o seu email";
     }
 
     public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException, TokenException {
         User user = userRepository.getById(passwordRecoveryDto.getId());
 
-        PasswordToken passwordToken = passwordTokenService.getToken(passwordRecoveryDto.getToken());
+        ConfirmationToken confirmationToken = confirmationTokenService.getToken(passwordRecoveryDto.getToken()).get();
 
-        if (passwordToken.getConfirmedAt() != null) {
+        if (confirmationToken.getConfirmedAt() != null) {
             throw new TokenException("Esta solicitação de renovação de senha está expirada. Para alterá-la, solicite novamente!");
         }
 
-        LocalDateTime expiredAt = passwordToken.getExpiresAt();
+        LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
             throw new TokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!");
         }
 
-        passwordTokenService.setConfirmedAt(passwordToken);
+        confirmationTokenService.setConfirmedAt(confirmationToken);
         user.setPassword(passwordRecoveryDto.getPassword());
 
         this.update(user);

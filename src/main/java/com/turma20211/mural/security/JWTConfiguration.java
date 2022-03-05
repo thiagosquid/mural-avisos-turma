@@ -39,7 +39,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/user/recovery",
                         "/api/v1/user/confirm", "/api/v1/user/refreshtoken").permitAll()
-                .antMatchers("/api/v1/user/setadmin/**","/api/v1/user/all").hasAuthority("SUPERUSER")
+                .antMatchers("/api/v1/user/set-admin/**","/api/v1/user/all").hasAuthority(Role.SUPERUSER.getValue())
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))

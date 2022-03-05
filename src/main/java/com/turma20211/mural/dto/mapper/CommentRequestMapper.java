@@ -8,7 +8,7 @@ public class CommentRequestMapper {
     public static Comment toModel(CommentRequestDto dto){
         Comment model = new Comment(dto.getId(),
                 dto.getContent(),
-                dto.getDateRegister(),
+                dto.getCreatedAt(),
                 null,
                 null);
         return model;
@@ -17,7 +17,7 @@ public class CommentRequestMapper {
     public static CommentRequestDto toDto(Comment model){
         CommentRequestDto dto = new CommentRequestDto(model.getId(),
                 model.getContent(),
-                model.getDateRegister(),
+                model.getCreatedAt(),
                 model.getPost().getId(),
                 model.getUser().getId());
 

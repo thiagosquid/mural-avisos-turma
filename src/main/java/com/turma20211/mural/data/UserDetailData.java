@@ -20,7 +20,7 @@ public class UserDetailData implements UserDetails {
     private String lastName;
     private String email;
     private String avatar;
-    private Boolean locked;
+    private Boolean accountNonLocked;
     private Boolean enabled;
     private String role;
 
