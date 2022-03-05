@@ -85,14 +85,14 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
 
         UserDetailData userData = (UserDetailData) authResult.getPrincipal();
 
-        String access_token = JWT.create()
+        String accessToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
                 .withClaim("role", userData.getRole())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
-        String refresh_token = JWT.create()
+        String refreshToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
                 .withJWTId(String.valueOf(1))
@@ -101,8 +101,8 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
         Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", access_token);
-        tokens.put("refresh_token", refresh_token);
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
     }

@@ -1,8 +1,8 @@
 package com.turma20211.mural.utils;
 
 public enum Role {
-    NORMAL("NORMAL"),
-    SUPERUSER("SUPERUSER"),
+    NORMAL("USER"),
+    SUPERUSER("SUPERADMIN"),
     ADMIN("ADMIN");
 
     private final String value;

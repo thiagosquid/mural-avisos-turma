@@ -1,5 +1,9 @@
 package com.turma20211.mural.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.ConfirmationToken;
@@ -9,29 +13,29 @@ import com.turma20211.mural.repository.UserRepository;
 import com.turma20211.mural.utils.Mail;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.text.Collator;
 import java.time.LocalDateTime;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
+import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
+import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
 
 @Service
-@AllArgsConstructor @Slf4j
+@AllArgsConstructor
+@Slf4j
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final ConfirmationTokenService confirmationTokenService;
+    private final PasswordTokenService passwordTokenService;
 
-    @Autowired
-    private ConfirmationTokenService confirmationTokenService;
-
-    @Autowired
-    private PasswordTokenService passwordTokenService;
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
 
     public Optional<User> findById(Long id) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(id);
@@ -222,6 +226,44 @@ public class UserService {
         this.update(user);
 
         return "Senha alterada com sucesso";
+    }
+
+    public Map<String, String> refreshToken(String authorizationHeader) throws UserNotFoundException {
+
+        Map<String, String> tokens = new HashMap<>();
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String refreshToken = authorizationHeader.substring("Bearer ".length());
+            Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
+            JWTVerifier verifier = JWT.require(algorithm).build();
+            DecodedJWT decodedJWT = verifier.verify(refreshToken);
+            Long id = Long.parseLong(decodedJWT.getClaim("userId").toString());
+            User user = this.findById(id).get();
+            String tokenId = decodedJWT.getId();
+
+            if (!tokenId.equals("1")) {
+                throw new RuntimeException("Esse não é um refresh token");
+            }
+            String accessToken = JWT.create()
+                    .withSubject(user.getUsername())
+                    .withClaim("userId", user.getId())
+                    .withClaim("role", user.getRole())
+                    .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
+                    .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
+
+            refreshToken = JWT.create()
+                    .withSubject(user.getUsername())
+                    .withClaim("userId", user.getId())
+                    .withJWTId(String.valueOf(1))
+                    .withClaim("role", user.getRole())
+                    .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
+                    .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
+
+            tokens.put("accessToken", accessToken);
+            tokens.put("refreshToken", refreshToken);
+        } else {
+            throw new RuntimeException("Refresh token faltando");
+        }
+        return tokens;
     }
 
     public User verifyIfEmailExists(String email) {

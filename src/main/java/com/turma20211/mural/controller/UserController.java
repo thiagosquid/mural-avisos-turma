@@ -5,34 +5,28 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.turma20211.mural.data.UserDetailData;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.User;
 import com.turma20211.mural.repository.UserRepository;
-import com.turma20211.mural.security.JWTAutenticationFilter;
 import com.turma20211.mural.security.JWTValidateFilter;
 import com.turma20211.mural.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
@@ -42,19 +36,18 @@ import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWOR
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder encoder;
-    @Autowired
-    private UserService userService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder encoder) {
-        this.userRepository = userRepository;
+
+    public UserController(UserService userService, PasswordEncoder encoder) {
+        this.userService = userService;
         this.encoder = encoder;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return ResponseEntity.ok(userService.findAll());
     }
 
     @GetMapping("/{id}")
@@ -70,8 +63,7 @@ public class UserController {
     }
 
     @PostMapping("/setadmin/{id}")
-    public void teste(@PathVariable Long id){
-
+    public void setAdmin(@PathVariable Long id){
         try {
             User user = userService.findById(id).get();
             user.setRole("ADMIN");
@@ -135,61 +127,30 @@ public class UserController {
         }
     }
 
-    @PostMapping("/verify")
-    public ResponseEntity<Boolean> validatePassword(@RequestParam String username,
-                                                    @RequestParam String password) {
-
-        Optional<User> optUser = userRepository.findByUsername(username);
-        if (optUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-        }
-
-        User userRegistred = optUser.get();
-        boolean valid = encoder.matches(password, userRegistred.getPassword());
-
-        HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-        return ResponseEntity.status(status).body(valid);
-    }
+//    @PostMapping("/verify")
+//    public ResponseEntity<Boolean> validatePassword(@RequestParam String username,
+//                                                    @RequestParam String password) {
+//
+//        Optional<User> optUser = userService.findByUsername(username);
+//        if (optUser.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+//        }
+//
+//        User userRegistred = optUser.get();
+//        boolean valid = encoder.matches(password, userRegistred.getPassword());
+//
+//        HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+//        return ResponseEntity.status(status).body(valid);
+//    }
 
     @GetMapping("/refreshtoken")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authorizationHeader = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE);
-
-        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             try{
-                String refreshToken = authorizationHeader.substring("Bearer ".length());
-                Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
-                JWTVerifier verifier = JWT.require(algorithm).build();
-                DecodedJWT decodedJWT = verifier.verify(refreshToken);
-                String username = decodedJWT.getSubject();
-                Long id = Long.parseLong(decodedJWT.getClaim("userId").toString());
-                User user = userService.findById(id).get();
-                String tokenId = decodedJWT.getId();
-
-                if(!tokenId.equals("1")){
-                    throw new RuntimeException("Esse não é um refresh token");
-                }
-                String access_token = JWT.create()
-                        .withSubject(user.getUsername())
-                        .withClaim("userId", user.getId())
-                        .withClaim("role", user.getRole())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
-                        .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
-
-                refreshToken = JWT.create()
-                        .withSubject(user.getUsername())
-                        .withClaim("userId", user.getId())
-                        .withJWTId(String.valueOf(1))
-                        .withClaim("role", user.getRole())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
-                        .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
-
-                Map<String, String> tokens = new HashMap<>();
-                tokens.put("access_token", access_token);
-                tokens.put("refresh_token", refreshToken);
-                response.setContentType("application/json");
+                Map<String, String> tokens = userService.refreshToken(authorizationHeader);
+                response.setStatus(200);
                 new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-            }catch (Exception e){
+            }catch (UserNotFoundException e){
                 log.error("Erro em: {}", e.getMessage());
                 response.setHeader("error", e.getMessage());
                 response.setStatus(403);
@@ -197,10 +158,10 @@ public class UserController {
                 error.put("error_message", e.getMessage());
                 response.setContentType("application/json");
                 new ObjectMapper().writeValue(response.getOutputStream(), error);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }else{
-            throw new RuntimeException("Refresh token faltando");
-        }
+
     }
 
 }
