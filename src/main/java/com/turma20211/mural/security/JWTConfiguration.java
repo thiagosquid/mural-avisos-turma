@@ -19,6 +19,13 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 public class JWTConfiguration extends WebSecurityConfigurerAdapter {
 
+    private static final String[] AUTH_WHITELIST = {
+            "/swagger-resources/**",
+            "/swagger-ui.html",
+            "/v2/api-docs",
+            "/webjars/**"
+    };
+
     private final UserDetailServiceImpl userService;
     private final PasswordEncoder passwordEncoder;
 
@@ -35,6 +42,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
+                .antMatchers(AUTH_WHITELIST).permitAll()
                 .antMatchers(HttpMethod.POST,"/login","/api/v1/user/signup", "/api/v1/user/recovery")
                 .permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/user/recovery",
