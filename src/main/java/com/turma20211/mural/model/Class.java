@@ -1,5 +1,6 @@
 package com.turma20211.mural.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -33,4 +34,9 @@ public class Class {
     @JsonIgnore
     @ToString.Exclude
     private List<Post> postsList = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "aClass", orphanRemoval = true)
+    @JsonBackReference
+    @ToString.Exclude
+    private List<Tag> tagsList = new ArrayList<>();
 }

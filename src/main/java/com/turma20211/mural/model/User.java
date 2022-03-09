@@ -51,7 +51,7 @@ public class User {
     private Boolean enabled = false;
 
     @Column(length = 25)
-    private String role = Role.USER.getValue();
+    private String role = Role.USER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore

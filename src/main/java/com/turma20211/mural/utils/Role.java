@@ -1,18 +1,9 @@
 package com.turma20211.mural.utils;
 
-public enum Role {
-    USER("USER"),
-    SUPERUSER("SUPERUSER"),
-    ADMIN("ADMIN");
+public class Role {
 
-    private final String value;
-
-    Role(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
+    public final static String USER = "USER";
+    public final static String ADMIN = "ADMIN";
+    public final static String SUPERUSER = "SUPERUSER";
 
 }

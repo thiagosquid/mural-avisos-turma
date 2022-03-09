@@ -1,6 +1,8 @@
 package com.turma20211.mural.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +24,14 @@ public class Tag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(length = 30, nullable = false)
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "class_id", nullable = false)
+    @JsonIgnoreProperties(value = {"users"})
+    @JsonProperty("class")
+    private Class aClass;
 
     @OneToMany(mappedBy = "tag")
     @JsonIgnore

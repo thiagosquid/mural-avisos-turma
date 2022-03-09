@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -19,11 +18,32 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 public class JWTConfiguration extends WebSecurityConfigurerAdapter {
 
-    private static final String[] AUTH_WHITELIST = {
+    private static final String[] SWAGGER_ENDPOINTS = {
             "/swagger-resources/**",
             "/swagger-ui.html",
             "/v2/api-docs",
             "/webjars/**"
+    };
+
+    private static final String[] POST_ENDPOINTS = {
+            "/login",
+            "/api/v1/user/signup",
+            "/api/v1/user/recovery"
+    };
+
+    private static final String[] GET_ENDPOINTS = {
+            "/api/v1/user/recovery",
+            "/api/v1/user/confirm",
+            "/api/v1/user/refreshtoken"
+    };
+
+    private static final String[] SUPERUSER_ENDPOINTS = {
+            "/api/v1/user/set-admin/**",
+            "/api/v1/user/all"
+    };
+
+    private static final String[] ADMIN_POST_ENDPOINTS = {
+            "/api/v1/tag"
     };
 
     private final UserDetailServiceImpl userService;
@@ -42,12 +62,11 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
-                .antMatchers(AUTH_WHITELIST).permitAll()
-                .antMatchers(HttpMethod.POST,"/login","/api/v1/user/signup", "/api/v1/user/recovery")
-                .permitAll()
-                .antMatchers(HttpMethod.GET, "/api/v1/user/recovery",
-                        "/api/v1/user/confirm", "/api/v1/user/refreshtoken").permitAll()
-                .antMatchers("/api/v1/user/set-admin/**","/api/v1/user/all").hasAuthority(Role.SUPERUSER.getValue())
+                .antMatchers(SWAGGER_ENDPOINTS).permitAll()
+                .antMatchers(HttpMethod.POST,POST_ENDPOINTS).permitAll()
+                .antMatchers(HttpMethod.GET, GET_ENDPOINTS).permitAll()
+                .antMatchers(SUPERUSER_ENDPOINTS).hasAuthority(Role.SUPERUSER)
+                .antMatchers(HttpMethod.POST, ADMIN_POST_ENDPOINTS).hasAnyAuthority(Role.ADMIN,Role.SUPERUSER)
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))
