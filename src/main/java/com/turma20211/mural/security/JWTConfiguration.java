@@ -42,7 +42,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
             "/api/v1/user/all"
     };
 
-    private static final String[] ADMIN_POST_ENDPOINTS = {
+    private static final String[] ADMIN_TAG_ENDPOINTS = {
             "/api/v1/tag"
     };
 
@@ -66,7 +66,8 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,POST_ENDPOINTS).permitAll()
                 .antMatchers(HttpMethod.GET, GET_ENDPOINTS).permitAll()
                 .antMatchers(SUPERUSER_ENDPOINTS).hasAuthority(Role.SUPERUSER)
-                .antMatchers(HttpMethod.POST, ADMIN_POST_ENDPOINTS).hasAnyAuthority(Role.ADMIN,Role.SUPERUSER)
+                .antMatchers(HttpMethod.POST, ADMIN_TAG_ENDPOINTS).hasAnyAuthority(Role.ADMIN,Role.SUPERUSER)
+                .antMatchers(HttpMethod.DELETE, ADMIN_TAG_ENDPOINTS).hasAnyAuthority(Role.ADMIN,Role.SUPERUSER)
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))

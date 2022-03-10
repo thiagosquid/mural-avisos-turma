@@ -20,7 +20,7 @@ public class ClassBuilder {
     private List<User> users = new ArrayList<>();
 
     public Class toClass(){
-        return new Class(null, name, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        return new Class(null, name, new ArrayList<>(), new ArrayList<>());
     }
 
 }

@@ -27,12 +27,6 @@ public class Tag {
     @Column(length = 30, nullable = false)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "class_id", nullable = false)
-    @JsonIgnoreProperties(value = {"users"})
-    @JsonProperty("class")
-    private Class aClass;
-
     @OneToMany(mappedBy = "tag")
     @JsonIgnore
     private List<Post> postList = new ArrayList<>();

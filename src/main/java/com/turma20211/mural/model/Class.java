@@ -35,8 +35,4 @@ public class Class {
     @ToString.Exclude
     private List<Post> postsList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "aClass", orphanRemoval = true)
-    @JsonBackReference
-    @ToString.Exclude
-    private List<Tag> tagsList = new ArrayList<>();
 }

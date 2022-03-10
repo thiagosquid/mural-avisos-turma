@@ -23,15 +23,15 @@ public class TagController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Tag> getAll(@RequestParam("classId") Long classId){
-        return tagService.getAll(classId);
+    public List<Tag> getAll() {
+        return tagService.getAll();
     }
 
-    @PostMapping("/{classId}")
-    public ResponseEntity<?> create(@RequestBody Tag tag, @PathVariable Long classId){
+    @PostMapping
+    public ResponseEntity<?> create(@RequestBody Tag tag) {
         URI uri = null;
-        try{
-            Tag tagSaved = tagService.create(tag, classId);
+        try {
+            Tag tagSaved = tagService.create(tag);
             uri = ServletUriComponentsBuilder
                     .fromCurrentRequest()
                     .path("/{id}")
@@ -44,4 +44,21 @@ public class TagController {
         }
         return ResponseEntity.created(uri).build();
     }
+
+    @DeleteMapping("{listTagsIds}")
+    public ResponseEntity<?> delete(@PathVariable List<Integer> listTagsIds) {
+        try {
+            if (listTagsIds.size() == 1) {
+                tagService.deleteById(listTagsIds.get(0));
+                log.info("Deletada tag com id {}", listTagsIds.get(0));
+            } else {
+                tagService.deleteAllById(listTagsIds);
+                log.info("Deletadas tags com os IDs {}", listTagsIds.toString());
+            }
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
