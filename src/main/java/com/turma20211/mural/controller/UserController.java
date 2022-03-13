@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @PostMapping("/set-admin/{id}")
-    public void setAdmin(@PathVariable Long id, HttpServletRequest request,HttpServletResponse response) throws IOException {
+    public void setAdmin(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             User user = userService.findById(id).get();
             user.setRole("ADMIN");
@@ -76,7 +76,7 @@ public class UserController {
             log.info(String.format("O usuário %s alterou a role do usuário %s para ADMIN", superUser.getUsername(), user.getUsername()));
         } catch (UserNotFoundException e) {
             response.setStatus(404);
-            response.sendError(1,"Usuário não encontrado");
+            response.sendError(1, "Usuário não encontrado");
         }
     }
 
@@ -96,9 +96,9 @@ public class UserController {
     @GetMapping("/confirm")
     public ResponseEntity<String> confirm(@RequestParam String token) {
         String confirmation = null;
-        try{
+        try {
             confirmation = userService.confirmToken(token);
-        }catch (UserNotFoundException | TokenException e){
+        } catch (UserNotFoundException | TokenException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (MessagingException | IOException e) {
             e.printStackTrace();
@@ -123,7 +123,7 @@ public class UserController {
 
     @CrossOrigin("*")
     @PostMapping("/recovery")
-    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto){
+    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
         try {
             String res = userService.changePassword(passwordRecoveryDto);
@@ -133,40 +133,24 @@ public class UserController {
         }
     }
 
-//    @PostMapping("/verify")
-//    public ResponseEntity<Boolean> validatePassword(@RequestParam String username,
-//                                                    @RequestParam String password) {
-//
-//        Optional<User> optUser = userService.findByUsername(username);
-//        if (optUser.isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
-//        }
-//
-//        User userRegistred = optUser.get();
-//        boolean valid = encoder.matches(password, userRegistred.getPassword());
-//
-//        HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-//        return ResponseEntity.status(status).body(valid);
-//    }
-
     @GetMapping("/refreshtoken")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authorizationHeader = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE);
-            try{
-                Map<String, String> tokens = userService.refreshToken(authorizationHeader);
-                response.setStatus(200);
-                new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-            }catch (UserNotFoundException e){
-                log.error("Erro em: {}", e.getMessage());
-                response.setHeader("error", e.getMessage());
-                response.setStatus(403);
-                Map<String, String> error = new HashMap<>();
-                error.put("error_message", e.getMessage());
-                response.setContentType("application/json");
-                new ObjectMapper().writeValue(response.getOutputStream(), error);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            Map<String, String> tokens = userService.refreshToken(authorizationHeader);
+            response.setStatus(200);
+            new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+        } catch (UserNotFoundException e) {
+            log.error("Erro em: {}", e.getMessage());
+            response.setHeader("error", e.getMessage());
+            response.setStatus(403);
+            Map<String, String> error = new HashMap<>();
+            error.put("error_message", e.getMessage());
+            response.setContentType("application/json");
+            new ObjectMapper().writeValue(response.getOutputStream(), error);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

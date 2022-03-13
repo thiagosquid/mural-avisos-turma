@@ -1,6 +1,5 @@
 package com.turma20211.mural.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -9,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -24,15 +23,33 @@ public class Class {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, length = 15)
-    private String code;
+    @Column(nullable = false)
+    private Integer year;
 
+    @Column(nullable = false)
+    private Integer semester;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
+
+    @OrderBy("username ASC")
     @ManyToMany(mappedBy = "classList", fetch = FetchType.LAZY)
-    private List<User> users = new ArrayList<>();
+    private Set<User> userList = new HashSet<>();
 
     @OneToMany(mappedBy = "aClass", cascade = CascadeType.ALL)
     @JsonIgnore
     @ToString.Exclude
-    private List<Post> postsList = new ArrayList<>();
+    private Set<Post> postsList = new HashSet<>();
 
+    //TODO Passar isso para um DTO
+//    @Override
+//    @JsonProperty(value = "code")
+//    public String toString() {
+//        String courseReturn = course.getAcronym()
+//                .concat(year.toString())
+//                .concat(semester.toString());
+//
+//        return courseReturn;
+//    }
 }

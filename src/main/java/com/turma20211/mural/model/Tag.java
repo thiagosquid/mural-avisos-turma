@@ -10,7 +10,9 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -29,5 +31,5 @@ public class Tag {
 
     @OneToMany(mappedBy = "tag")
     @JsonIgnore
-    private List<Post> postList = new ArrayList<>();
+    private Set<Post> postList = new HashSet<>();
 }

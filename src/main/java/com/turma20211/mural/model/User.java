@@ -8,9 +8,7 @@ import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Getter
@@ -74,6 +72,7 @@ public class User {
     @ToString.Exclude
     private List<Post> favoritesPosts = new ArrayList<>();
 
+    @OrderBy
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "tb_users_classes",
             joinColumns = {
@@ -82,7 +81,7 @@ public class User {
             inverseJoinColumns = {
                     @JoinColumn(name = "class_id", referencedColumnName = "id",
                             nullable = false)})
-    private List<Class> classList = new ArrayList<>();
+    private Set<Class> classList = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

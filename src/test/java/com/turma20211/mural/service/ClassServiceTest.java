@@ -25,14 +25,14 @@ class ClassServiceTest {
     void whenClassInformedItShouldBeCreated(){
         // given
         Class expectedSavedClass = ClassBuilder.builder().build().toClass();
-
+        Class classToReturn = ClassBuilder.builder().build().toClass();
+        classToReturn.setId(1L);
         // when
-        when(classRepository.save(expectedSavedClass)).thenReturn(expectedSavedClass);
-
+        when(classRepository.save(expectedSavedClass)).thenReturn(classToReturn);
+        expectedSavedClass.setId(classToReturn.getId());
         //then
         Class createdClass = classService.create(expectedSavedClass);
-
-        assertEquals(expectedSavedClass.getCode(), createdClass.getCode());
+        assertEquals(expectedSavedClass, createdClass);
 
     }
 

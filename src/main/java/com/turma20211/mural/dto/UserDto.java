@@ -9,7 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -36,5 +38,5 @@ public class UserDto {
 
     private List<Post> favoritesPosts = new ArrayList<>();
 
-    private List<Class> classList = new ArrayList<>();
+    private Set<Class> classList = new HashSet<>();
 }
