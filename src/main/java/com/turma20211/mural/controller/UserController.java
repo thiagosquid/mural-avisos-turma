@@ -31,7 +31,6 @@ import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWOR
 
 @Slf4j
 @RestController
-@CrossOrigin("*")
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
 

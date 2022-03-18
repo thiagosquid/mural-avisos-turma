@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -28,32 +29,42 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Tag tag) {
-        URI uri = null;
+    public ResponseEntity<?> create(@RequestBody List<Tag> tagList) {
+        URI uri;
         try {
-            Tag tagSaved = tagService.create(tag);
-            uri = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(tagSaved.getId())
-                    .toUri();
-            log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
+            if (tagList.size() == 1) {
+                Tag tagSaved = tagService.create(tagList.get(0));
+                uri = ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(tagSaved.getId())
+                        .toUri();
+                log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
+                return ResponseEntity.created(uri).body(tagSaved);
+            } else {
+                try {
+                    tagService.createAll(tagList);
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
+                log.info("Criadas as seguintes TAG's {}", tagList);
+                return ResponseEntity.status(HttpStatus.CREATED).body(tagList);
+            }
         } catch (TagExistsException e) {
-            log.error("TAG \"{}\" já existe no banco", tag.getDescription());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+//            log.error("TAG \"{}\" já existe no banco", tag.getDescription());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        return ResponseEntity.created(uri).build();
     }
 
-    @DeleteMapping("{listTagsIds}")
-    public ResponseEntity<?> delete(@PathVariable List<Integer> listTagsIds) {
+    @DeleteMapping("{tagIdList}")
+    public ResponseEntity<?> delete(@PathVariable List<Integer> tagIdList) {
         try {
-            if (listTagsIds.size() == 1) {
-                tagService.deleteById(listTagsIds.get(0));
-                log.info("Deletada tag com id {}", listTagsIds.get(0));
+            if (tagIdList.size() == 1) {
+                tagService.deleteById(tagIdList.get(0));
+                log.info("Deletada tag com id {}", tagIdList.get(0));
             } else {
-                tagService.deleteAllById(listTagsIds);
-                log.info("Deletadas tags com os IDs {}", listTagsIds.toString());
+                tagService.deleteAllById(tagIdList);
+                log.info("Deletadas tags com os IDs {}", tagIdList);
             }
             return ResponseEntity.noContent().build();
         } catch (Exception e) {

@@ -4,7 +4,6 @@ import com.turma20211.mural.exception.TagExistsException;
 import com.turma20211.mural.model.Tag;
 import com.turma20211.mural.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.Optional;
 public class TagService {
 
     private final TagRepository tagRepository;
-    private final ClassService classService;
 
     public List<Tag> getAll() {
         return tagRepository.findAll();
@@ -25,7 +23,17 @@ public class TagService {
         if (verifyIfExists(tag.getDescription())) {
             throw new TagExistsException(tag.getDescription());
         }
+
         return tagRepository.save(tag);
+    }
+
+    public void createAll(List<Tag> tagList) throws Exception {
+        for(Tag tag : tagList){
+            if (verifyIfExists(tag.getDescription())) {
+                throw new Exception("TAG " + tag.getDescription() + " já existe");
+            }
+        }
+        tagRepository.saveAllAndFlush(tagList);
     }
 
     public void deleteById(Integer tagId) throws Exception {
@@ -48,7 +56,7 @@ public class TagService {
     }
 
     private boolean verifyIfExists(List<Integer> listTagsIds) {
-        List<Tag> listExistent = tagRepository.findAllById(listTagsIds);;
+        List<Tag> listExistent = tagRepository.findAllById(listTagsIds);
         return listExistent.size() == listTagsIds.size();
     }
 
