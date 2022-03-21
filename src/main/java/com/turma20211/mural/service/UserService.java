@@ -44,7 +44,8 @@ public class UserService {
         }
     }
 
-    public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException, EmailAlreadyExistsException, MessagingException, IOException, FirstNameInvalidException, LastNameInvalidException {
+    public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException,
+            EmailAlreadyExistsException, MessagingException, IOException, FirstNameInvalidException, LastNameInvalidException {
 
         Collator collator = Collator.getInstance(Locale.forLanguageTag("pt_BR"));
         collator.setStrength(Collator.PRIMARY);
@@ -64,6 +65,7 @@ public class UserService {
         try {
             isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) >= 0;
         } catch (Exception e) {
+            throw new UserInvalidEmailException("Email com 3 dígitos inválidos");
         }
 
         if (!sameFirstName) {

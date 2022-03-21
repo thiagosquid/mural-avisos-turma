@@ -1,6 +1,5 @@
 package com.turma20211.mural.controller;
 
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -36,7 +35,6 @@ public class UserController {
 
     private final UserService userService;
     private final PasswordEncoder encoder;
-
 
     public UserController(UserService userService, PasswordEncoder encoder) {
         this.userService = userService;
@@ -150,7 +148,5 @@ public class UserController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 }
