@@ -42,6 +42,7 @@ public class Post {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "class_id", nullable = false)
     private Class aClass;
@@ -50,6 +51,7 @@ public class Post {
     @JsonIgnore
     private List<Comment> commentList = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "favoritesPosts", fetch = FetchType.LAZY)
     private List<User> usersFavorited = new ArrayList<>();
 
