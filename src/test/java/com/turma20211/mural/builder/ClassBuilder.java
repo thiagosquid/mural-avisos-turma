@@ -22,7 +22,7 @@ public class ClassBuilder {
     private Integer semester = 1;
 
     @Builder.Default
-    private Course course = new Course(1, "Análise e Desenvolvimento de Sistemas", "ADS", 6);
+    private Course course = new Course(1, "Análise e Desenvolvimento de Sistemas", "ADS", 6, new ArrayList<>());
 
     @Builder.Default
     private List<User> users = new ArrayList<>();
