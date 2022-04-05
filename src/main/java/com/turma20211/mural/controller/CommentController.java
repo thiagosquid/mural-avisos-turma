@@ -5,16 +5,16 @@ import com.turma20211.mural.dto.request.CommentRequestDto;
 import com.turma20211.mural.exception.UserNotFoundException;
 import com.turma20211.mural.model.Comment;
 import com.turma20211.mural.service.CommentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/comment")
+@AllArgsConstructor
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+    private final CommentService commentService;
 
     @PostMapping
     public CommentRequestDto makeComment(@RequestBody CommentRequestDto commentDto) throws UserNotFoundException {

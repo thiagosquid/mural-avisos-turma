@@ -1,9 +1,7 @@
 package com.turma20211.mural.dto.mapper;
 
 import com.turma20211.mural.dto.PostDto;
-import com.turma20211.mural.dto.UserDto;
 import com.turma20211.mural.model.Post;
-import com.turma20211.mural.model.User;
 
 public class PostMapper {
 
@@ -12,9 +10,10 @@ public class PostMapper {
                 post.getTitle(),
                 post.getContent(),
                 post.getDeadline(),
-                post.getDateRegister(),
+                post.getCreatedAt(),
                 post.getTag(),
                 post.getUser(),
+                post.getAClass(),
                 post.getCommentList(),
                 post.getUsersFavorited());
 
@@ -26,9 +25,10 @@ public class PostMapper {
                 postDto.getTitle(),
                 postDto.getContent(),
                 postDto.getDeadline(),
-                postDto.getDateRegister(),
+                postDto.getCreatedAt(),
                 postDto.getTag(),
                 postDto.getUser(),
+                postDto.getAClass(),
                 postDto.getCommentList(),
                 postDto.getUsersFavorited());
 

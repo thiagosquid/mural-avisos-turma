@@ -7,7 +7,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class UserInvalidEmailException extends Exception {
 
     public UserInvalidEmailException() {
-        super(String.format("Email inválido, você precisa usar um email academico <\"@academico.ifs.edu.br\">"));
+        super("Email inválido, você precisa usar um email academico <\"@academico.ifs.edu.br\">");
+    }
+
+    public UserInvalidEmailException(String text){
+        super(text);
     }
 
 

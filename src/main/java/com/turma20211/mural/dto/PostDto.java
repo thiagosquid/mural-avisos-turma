@@ -1,5 +1,6 @@
 package com.turma20211.mural.dto;
 
+import com.turma20211.mural.model.Class;
 import com.turma20211.mural.model.Comment;
 import com.turma20211.mural.model.Tag;
 import com.turma20211.mural.model.User;
@@ -26,11 +27,13 @@ public class PostDto {
 
     private LocalDateTime deadline;
 
-    private LocalDateTime dateRegister;
+    private LocalDateTime createdAt;
 
     private Tag tag;
 
     private User user;
+
+    private Class aClass;
 
     private List<Comment> commentList = new ArrayList<>();
 

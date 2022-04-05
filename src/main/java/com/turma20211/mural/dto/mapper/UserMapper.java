@@ -14,10 +14,11 @@ public class UserMapper {
                 user.getAvatar(),
                 user.getLocked(),
                 user.getEnabled(),
+                user.getRole(),
                 user.getPostsList(),
                 user.getTokenList(),
-                user.getTokenPasswordList(),
-                user.getFavoritesPosts());
+                user.getFavoritesPosts(),
+                user.getClassList());
 
         return userDto;
     }
@@ -32,10 +33,11 @@ public class UserMapper {
                 userDto.getAvatar(),
                 userDto.getLocked(),
                 userDto.getEnabled(),
+                userDto.getRole(),
                 userDto.getPostsList(),
                 userDto.getTokenList(),
-                userDto.getTokenPasswordList(),
-                userDto.getFavoritesPosts());
+                userDto.getFavoritesPosts(),
+                userDto.getClassList());
 
         return user;
     }

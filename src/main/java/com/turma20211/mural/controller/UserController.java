@@ -1,40 +1,49 @@
 package com.turma20211.mural.controller;
 
-
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.User;
-import com.turma20211.mural.repository.UserRepository;
+import com.turma20211.mural.security.JWTValidateFilter;
 import com.turma20211.mural.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
+
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PasswordEncoder encoder;
-    @Autowired
-    private UserService userService;
 
-    public UserController(UserRepository userRepository, PasswordEncoder encoder) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService, PasswordEncoder encoder) {
+        this.userService = userService;
         this.encoder = encoder;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.ok(userRepository.findAll());
+        return ResponseEntity.ok(userService.findAll());
     }
 
     @GetMapping("/{id}")
@@ -47,6 +56,25 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
+    }
+
+    @PostMapping("/set-admin/{id}")
+    public void setAdmin(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            User user = userService.findById(id).get();
+            user.setRole("ADMIN");
+            String token = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE).substring("Bearer ".length());
+            Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
+            JWTVerifier verifier = JWT.require(algorithm).build();
+            DecodedJWT decodedJWT = verifier.verify(token);
+            Long idSuperUser = Long.parseLong(decodedJWT.getClaim("userId").toString());
+            User superUser = userService.findById(idSuperUser).get();
+            userService.update(user);
+            log.info(String.format("O usuário %s alterou a role do usuário %s para ADMIN", superUser.getUsername(), user.getUsername()));
+        } catch (UserNotFoundException e) {
+            response.setStatus(404);
+            response.sendError(1, "Usuário não encontrado");
+        }
     }
 
     @CrossOrigin("*")
@@ -65,9 +93,9 @@ public class UserController {
     @GetMapping("/confirm")
     public ResponseEntity<String> confirm(@RequestParam String token) {
         String confirmation = null;
-        try{
+        try {
             confirmation = userService.confirmToken(token);
-        }catch (UserNotFoundException | TokenException e){
+        } catch (UserNotFoundException | TokenException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (MessagingException | IOException e) {
             e.printStackTrace();
@@ -92,30 +120,33 @@ public class UserController {
 
     @CrossOrigin("*")
     @PostMapping("/recovery")
-    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto){
+    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
         try {
-            userService.changePassword(passwordRecoveryDto);
-            return ResponseEntity.status(HttpStatus.OK).build();
+            String res = userService.changePassword(passwordRecoveryDto);
+            return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (UserNotFoundException | TokenException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
-    @PostMapping("/verify")
-    public ResponseEntity<Boolean> validatePassword(@RequestParam String username,
-                                                    @RequestParam String password) {
-
-        Optional<User> optUser = userRepository.findByUsername(username);
-        if (optUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+    @GetMapping("/refreshtoken")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String authorizationHeader = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE);
+        try {
+            Map<String, String> tokens = userService.refreshToken(authorizationHeader);
+            response.setStatus(200);
+            new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+        } catch (UserNotFoundException | TokenException e) {
+            log.error("Erro em: {}", e.getMessage());
+            response.setHeader("error", e.getMessage());
+            response.setStatus(403);
+            Map<String, String> error = new HashMap<>();
+            error.put("error_message", e.getMessage());
+            response.setContentType("application/json");
+            new ObjectMapper().writeValue(response.getOutputStream(), error);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        User userRegistred = optUser.get();
-        boolean valid = encoder.matches(password, userRegistred.getPassword());
-
-        HttpStatus status = (valid) ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-        return ResponseEntity.status(status).body(valid);
     }
-
 }

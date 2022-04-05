@@ -16,22 +16,23 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonRootName(value = "post")
+@Table(name = "tb_post")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     private LocalDateTime deadline;
 
     @Column(nullable = false)
-    private LocalDateTime dateRegister;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "tag_id", nullable = false)
@@ -40,6 +41,10 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "class_id", nullable = false)
+    private Class aClass;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     @JsonIgnore

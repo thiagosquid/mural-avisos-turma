@@ -1,6 +1,7 @@
 package com.turma20211.mural.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.turma20211.mural.model.Class;
 import com.turma20211.mural.model.ConfirmationToken;
 import com.turma20211.mural.model.Post;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -21,12 +24,11 @@ public class UserDto {
     private String lastName;
     private String email;
     private String avatar;
-
     @JsonIgnore
     private Boolean locked = false;
-
     @JsonIgnore
     private Boolean enabled = false;
+    private String role;
 
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();
@@ -34,8 +36,7 @@ public class UserDto {
     @JsonIgnore
     private List<ConfirmationToken> tokenList = new ArrayList<>();
 
-    @JsonIgnore
-    private List<ConfirmationToken> tokenPasswordList = new ArrayList<>();
-
     private List<Post> favoritesPosts = new ArrayList<>();
+
+    private Set<Class> classList = new HashSet<>();
 }

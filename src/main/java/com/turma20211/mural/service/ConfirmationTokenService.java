@@ -32,6 +32,10 @@ public class ConfirmationTokenService {
         return confirmationTokenRepository.findByUser(user);
     }
 
+    public Optional<ConfirmationToken> findByUserAndConfirmedAtIsNull(User user){
+        return confirmationTokenRepository.findByUserAndConfirmedAtIsNull(user);
+    }
+
     public void delete(ConfirmationToken confirmationToken){
         confirmationTokenRepository.delete(confirmationToken);
     }

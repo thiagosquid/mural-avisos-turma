@@ -9,7 +9,6 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Data
@@ -17,17 +16,18 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonRootName(value = "comment", namespace = "comment")
+@Table(name = "tb_comment")
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
-    private LocalDateTime dateRegister;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
