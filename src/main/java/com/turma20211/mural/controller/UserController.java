@@ -137,7 +137,7 @@ public class UserController {
             Map<String, String> tokens = userService.refreshToken(authorizationHeader);
             response.setStatus(200);
             new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-        } catch (UserNotFoundException e) {
+        } catch (UserNotFoundException | TokenException e) {
             log.error("Erro em: {}", e.getMessage());
             response.setHeader("error", e.getMessage());
             response.setStatus(403);

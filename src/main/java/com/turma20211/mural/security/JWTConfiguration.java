@@ -28,7 +28,8 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
     private static final String[] POST_ENDPOINTS = {
             "/login",
             "/api/v1/user/signup",
-            "/api/v1/user/recovery"
+            "/api/v1/user/recovery",
+            "/api/v1/file"
     };
 
     private static final String[] GET_ENDPOINTS = {

@@ -32,7 +32,8 @@ public class CourseController {
     @GetMapping("{id}")
     public ResponseEntity<?> getById(@PathVariable Integer id) {
         try {
-            return ResponseEntity.status(HttpStatus.FOUND).body(courseService.getById(id));
+            Course course = courseService.getById(id);
+            return ResponseEntity.status(HttpStatus.FOUND).body(course);
         } catch (CourseNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -43,11 +44,8 @@ public class CourseController {
         URI uri;
         try {
             courseService.create(course);
-            uri = ServletUriComponentsBuilder
-                    .fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(course.getId())
-                    .toUri();
+            uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                    .path("/{id}").buildAndExpand(course.getId()).toUri();
             log.info("Criado Curso com ID \"{}\" e NOME \"{}\"", course.getId(), course.getName());
             return ResponseEntity.created(uri).body(course);
         } catch (CourseAlreadyExistsException e) {

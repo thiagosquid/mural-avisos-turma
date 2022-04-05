@@ -4,18 +4,18 @@ import com.turma20211.mural.exception.CourseAlreadyExistsException;
 import com.turma20211.mural.exception.CourseNotFoundException;
 import com.turma20211.mural.model.Course;
 import com.turma20211.mural.repository.CourseRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CourseService {
 
-    @Autowired
-    private CourseRepository courseRepository;
+    private final CourseRepository courseRepository;
 
     public List<Course> getAll(){
         return courseRepository.findAll();
@@ -24,7 +24,8 @@ public class CourseService {
     public Course getById(Integer id) throws CourseNotFoundException {
         boolean exists = courseRepository.existsById(id);
         if (exists) {
-            return courseRepository.getById(id);
+            Course courseFound = courseRepository.getById(id);
+            return courseFound;
         } else {
             throw new CourseNotFoundException(id);
         }

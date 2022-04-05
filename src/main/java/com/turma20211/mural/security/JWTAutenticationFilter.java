@@ -90,7 +90,7 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         String refreshToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
-                .withJWTId(String.valueOf(1))
+                .withJWTId("1")
                 .withClaim("role", userData.getRole())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));

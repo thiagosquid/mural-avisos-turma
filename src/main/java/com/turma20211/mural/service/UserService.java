@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.turma20211.mural.configuration.BotConfiguration;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.ConfirmationToken;
@@ -16,10 +17,11 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
-import java.text.Collator;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.turma20211.mural.configuration.PropertiesConfiguration.API_BASE_URL;
+import static com.turma20211.mural.configuration.PropertiesConfiguration.FRONT_BASE_URL;
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
 import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
 
@@ -27,6 +29,10 @@ import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWOR
 @AllArgsConstructor
 @Slf4j
 public class UserService {
+
+    private static final String EMAIL_DOMAIN = "@academico.ifs.edu.br";
+
+    private BotConfiguration botConfiguration;
 
     private final UserRepository userRepository;
     private final ConfirmationTokenService confirmationTokenService;
@@ -44,12 +50,13 @@ public class UserService {
         }
     }
 
-    public String save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException,
+    public void save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException,
             EmailAlreadyExistsException, MessagingException, IOException, FirstNameInvalidException, LastNameInvalidException {
-
+        /* Removida a verificação se email e nomes coincidem, deixando apenas a verificação se o email é do dominio do IFS
         Collator collator = Collator.getInstance(Locale.forLanguageTag("pt_BR"));
         collator.setStrength(Collator.PRIMARY);
 
+        //Procedimento para extrair do email o primeiro nome, ultimo nome e verificar se possui os numeros antes do @
         String[] email = user.getEmail().split("[.,@]");
         String emailFirstName = email[0];
         int tam = email[1].length();
@@ -74,8 +81,8 @@ public class UserService {
         if (!sameLastName) {
             throw new LastNameInvalidException();
         }
-
-        if (user.getEmail().contains("@academico.ifs.edu.br") && isNumber) {
+        */
+        if (user.getEmail().contains(EMAIL_DOMAIN)) {
             user.setUsername(user.getUsername());
             user.setEmail(user.getEmail().toLowerCase());
             Optional<ConfirmationToken> ct = Optional.of(new ConfirmationToken());
@@ -105,16 +112,13 @@ public class UserService {
             );
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            String link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=";
+            String link = API_BASE_URL.concat("/api/v1/user/confirm?token=").concat(token);
             if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-                link = link + token;
                 Mail mailer = new Mail();
                 mailer.sendConfirmationAccount(user, link);
             } else {
-                link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
                 System.out.println(link);
             }
-            return token;
         } else {
             throw new UserInvalidEmailException();
         }
@@ -196,14 +200,23 @@ public class UserService {
         );
 
         confirmationTokenService.saveConfirmationToken(confirmationToken);
-        String link = "http://projeto-mural-turma.vercel.app/recovery_password?token=";
+        String link = FRONT_BASE_URL.concat("/recovery_password?token=")
+                .concat(token)
+                .concat("&id=").
+                concat(user.getId().toString());
+
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-            link = link + token + "&id=" + user.getId();
+//            link = link + token + "&id=" + user.getId();
             Mail mailer = new Mail();
             mailer.sendRecoveryEmail(user, link);
         } else {
-            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
-            System.out.println(link);
+//            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
+            String body = "{\n" +
+                    "    \"id\": \""+ user.getId() +"\",\n" +
+                    "    \"password\": \"<troque essa senha>\",\n" +
+                    "    \"token\" : \""+ token +"\"\n" +
+                    "}";
+            System.out.println(body);
         }
         return "Um link para alterar a senha foi enviado para o seu email";
     }
@@ -231,7 +244,7 @@ public class UserService {
         return "Senha alterada com sucesso";
     }
 
-    public Map<String, String> refreshToken(String authorizationHeader) throws UserNotFoundException {
+    public Map<String, String> refreshToken(String authorizationHeader) throws UserNotFoundException, TokenException {
 
         Map<String, String> tokens = new HashMap<>();
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -243,8 +256,8 @@ public class UserService {
             User user = this.findById(id).get();
             String tokenId = decodedJWT.getId();
 
-            if (!tokenId.equals("1")) {
-                throw new RuntimeException("Esse não é um refresh token");
+            if (tokenId == null || !tokenId.equals("1")) {
+                throw new TokenException("Esse não é um refresh token");
             }
             String accessToken = JWT.create()
                     .withSubject(user.getUsername())
