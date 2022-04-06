@@ -15,7 +15,6 @@
 	<description>Projeto da turma 2021-1 de ADS do IFS</description>
 	<properties>
 		<java.version>11</java.version>
-		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -76,20 +75,10 @@
 			<version>2.9.2</version>
 		</dependency>
 		<dependency>
-			<groupId>com.discord4j</groupId>
-			<artifactId>discord4j-core</artifactId>
-			<version>3.2.2</version>
-		</dependency>
-		<dependency>
 			<groupId>com.cloudinary</groupId>
 			<artifactId>cloudinary-http44</artifactId>
 			<version>1.30.0</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.mapstruct</groupId>-->
-<!--			<artifactId>mapstruct</artifactId>-->
-<!--			<version>${org.mapstruct.version}</version>-->
-<!--		</dependency>-->
     </dependencies>
 
 	<build>
@@ -106,22 +95,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-compiler-plugin</artifactId>-->
-<!--				<version>3.8.1</version>-->
-<!--				<configuration>-->
-<!--					<source>${java.version}</source> &lt;!&ndash; depending on your project &ndash;&gt;-->
-<!--					<target>${java.version}</target> &lt;!&ndash; depending on your project &ndash;&gt;-->
-<!--					<annotationProcessorPaths>-->
-<!--						<path>-->
-<!--							<groupId>org.mapstruct</groupId>-->
-<!--							<artifactId>mapstruct-processor</artifactId>-->
-<!--							<version>${org.mapstruct.version}</version>-->
-<!--						</path>-->
-<!--					</annotationProcessorPaths>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
 		</plugins>
 	</build>
 

@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.turma20211.mural.configuration.BotConfiguration;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
 import com.turma20211.mural.model.ConfirmationToken;
@@ -31,8 +30,6 @@ import static com.turma20211.mural.security.JWTAutenticationFilter.TOKEN_PASSWOR
 public class UserService {
 
     private static final String EMAIL_DOMAIN = "@academico.ifs.edu.br";
-
-    private BotConfiguration botConfiguration;
 
     private final UserRepository userRepository;
     private final ConfirmationTokenService confirmationTokenService;
@@ -212,9 +209,9 @@ public class UserService {
         } else {
 //            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
             String body = "{\n" +
-                    "    \"id\": \""+ user.getId() +"\",\n" +
+                    "    \"id\": \"" + user.getId() + "\",\n" +
                     "    \"password\": \"<troque essa senha>\",\n" +
-                    "    \"token\" : \""+ token +"\"\n" +
+                    "    \"token\" : \"" + token + "\"\n" +
                     "}";
             System.out.println(body);
         }
