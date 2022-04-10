@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turma20211.mural.data.UserDetailData;
 import com.turma20211.mural.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
-
+@Slf4j
 public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     public static final int TOKEN_EXPIRATION = 10 * 60 * 1000;
@@ -59,17 +60,17 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         try {
             return authenticationManager.authenticate(authentication);
         } catch (Exception e) {
-            e.getMessage();
+            log.warn(e.getMessage());
             Map<String, String> res = new HashMap<>();
             res.put("message", "Usuário ou senha incorretos");
             response.setContentType("application/json");
             try {
                 new ObjectMapper().writeValue(response.getOutputStream(), res);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                log.warn(ex.getMessage());
             }
-            throw new RuntimeException("Falha ao autenticar usuario");
         }
+        return null;
     }
 
     @Override
@@ -83,7 +84,6 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         String accessToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
-                .withClaim("role", userData.getRole())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
@@ -91,7 +91,6 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
                 .withJWTId("1")
-                .withClaim("role", userData.getRole())
                 .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 

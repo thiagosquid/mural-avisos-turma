@@ -17,8 +17,7 @@ public class MuralDeAvisosAds20211Application {
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        return encoder;
+        return new BCryptPasswordEncoder();
     }
 
 }

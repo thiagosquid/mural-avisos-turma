@@ -1,6 +1,7 @@
 package com.turma20211.mural.security;
 
 import com.turma20211.mural.service.UserDetailServiceImpl;
+import com.turma20211.mural.service.UserService;
 import com.turma20211.mural.utils.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,17 +48,18 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
             "/api/v1/tag"
     };
 
-    private final UserDetailServiceImpl userService;
+    private final UserDetailServiceImpl userDetailService;
     private final PasswordEncoder passwordEncoder;
-
-    public JWTConfiguration(UserDetailServiceImpl userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
+    private final UserService userService;
+    public JWTConfiguration(UserDetailServiceImpl userDetailService, PasswordEncoder passwordEncoder, UserService userService) {
+        this.userDetailService = userDetailService;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userService).passwordEncoder(passwordEncoder);
+        auth.userDetailsService(userDetailService).passwordEncoder(passwordEncoder);
     }
 
     @Override
@@ -72,7 +74,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))
-                .addFilter(new JWTValidateFilter(authenticationManager()))
+                .addFilter(new JWTValidateFilter(authenticationManager(), userService))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());

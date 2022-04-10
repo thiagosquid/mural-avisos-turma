@@ -125,10 +125,9 @@ public class UserService {
         User byId = verifyIfExists(user.getId());
         User byUsername = verifyIfExists(user.getUsername());
 
-        if (byId.getId() == byUsername.getId()) {
+        if (byId.getId().equals(byUsername.getId())) {
             return userRepository.save(user);
         }
-
         return new User();
     }
 
@@ -153,13 +152,11 @@ public class UserService {
             confirmationToken.setCreatedAt(LocalDateTime.now());
             confirmationToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            String link = "http://muralturma.herokuapp.com/api/v1/user/confirm?token=";
+            String link = API_BASE_URL.concat("/api/v1/user/confirm?token=").concat(newToken);
             if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-                link = link + newToken;
                 Mail mailer = new Mail();
                 mailer.sendConfirmationAccount(user, link);
             } else {
-                link = "http://localhost:8080/api/v1/user/confirm?token=" + newToken;
                 System.out.println(link);
             }
             throw new TokenException("Solicitação expirada. Você receberá novo email de confirmação");
@@ -171,9 +168,15 @@ public class UserService {
         update(user);
         return "<h1 style=\"color=red; weight=bold; margin: auto\">Conta verificada</h1>" +
                 "<p style=\"margin: auto;\">Estamos redirecionando para página de login...</p>" +
-                "<script> setTimeout(()=> window.location.replace(\"http://projeto-mural-turma.vercel.app/\"), 3500); </script>";
+                "<script> setTimeout(()=> window.location.replace(\"" + FRONT_BASE_URL + "\"), 3500); </script>";
     }
 
+    /**
+     * @param user
+     * @return
+     * @throws MessagingException
+     * @throws IOException
+     */
     public String changePasswordToken(User user) throws MessagingException, IOException {
 
         Optional<ConfirmationToken> pt = confirmationTokenService.findByUserAndConfirmedAtIsNull(user);
@@ -203,11 +206,9 @@ public class UserService {
                 concat(user.getId().toString());
 
         if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-//            link = link + token + "&id=" + user.getId();
             Mail mailer = new Mail();
             mailer.sendRecoveryEmail(user, link);
         } else {
-//            link = "http://localhost:8080/api/v1/user/confirm?token=" + token + "&id=" + user.getId();
             String body = "{\n" +
                     "    \"id\": \"" + user.getId() + "\",\n" +
                     "    \"password\": \"<troque essa senha>\",\n" +
@@ -259,20 +260,18 @@ public class UserService {
             String accessToken = JWT.create()
                     .withSubject(user.getUsername())
                     .withClaim("userId", user.getId())
-                    .withClaim("role", user.getRole())
                     .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                     .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
-            refreshToken = JWT.create()
+            String newRefreshToken = JWT.create()
                     .withSubject(user.getUsername())
                     .withClaim("userId", user.getId())
                     .withJWTId(String.valueOf(1))
-                    .withClaim("role", user.getRole())
                     .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
                     .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
             tokens.put("accessToken", accessToken);
-            tokens.put("refreshToken", refreshToken);
+            tokens.put("refreshToken", newRefreshToken);
         } else {
             throw new RuntimeException("Refresh token faltando");
         }
@@ -289,21 +288,5 @@ public class UserService {
 
     private User verifyIfExists(String username) throws UserNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
-    }
-
-    private void deleteByEmail(User user) {
-        userRepository.delete(user);
-    }
-
-    private void sendEmailConfirmation(User user, String token, String link) throws MessagingException, IOException {
-
-        if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
-            link = link + token;
-            Mail mailer = new Mail();
-            mailer.sendConfirmationAccount(user, link);
-        } else {
-            link = "http://localhost:8080/api/v1/user/confirm?token=" + token;
-            System.out.println(link);
-        }
     }
 }
