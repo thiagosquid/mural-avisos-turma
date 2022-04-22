@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.turma20211.mural.dto.RefreshTokenRequestDto;
 import com.turma20211.mural.dto.mapper.UserMapper;
 import com.turma20211.mural.dto.request.PasswordRecoveryDto;
 import com.turma20211.mural.exception.*;
@@ -130,17 +131,17 @@ public class UserController {
         }
     }
 
-    @GetMapping("/refreshtoken")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorizationHeader = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE);
+    @PostMapping("/refreshtoken")
+    public void refreshToken(@RequestBody RefreshTokenRequestDto refreshTokenRequestDto, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String authorizationHeader = "Bearer ".concat(refreshTokenRequestDto.getRefreshToken());
         try {
             Map<String, String> tokens = userService.refreshToken(authorizationHeader);
-            response.setStatus(200);
+            response.setStatus(HttpStatus.OK.value());
             new ObjectMapper().writeValue(response.getOutputStream(), tokens);
         } catch (UserNotFoundException | TokenException e) {
             log.error("Erro em: {}", e.getMessage());
             response.setHeader("error", e.getMessage());
-            response.setStatus(403);
+            response.setStatus(HttpStatus.FORBIDDEN.value());
             Map<String, String> error = new HashMap<>();
             error.put("error_message", e.getMessage());
             response.setContentType("application/json");
