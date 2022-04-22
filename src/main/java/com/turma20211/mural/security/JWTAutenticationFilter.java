@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turma20211.mural.data.UserDetailData;
 import com.turma20211.mural.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -63,6 +64,7 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
             log.warn(e.getMessage());
             Map<String, String> res = new HashMap<>();
             res.put("message", "Usuário ou senha incorretos");
+            response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setContentType("application/json");
             try {
                 new ObjectMapper().writeValue(response.getOutputStream(), res);
