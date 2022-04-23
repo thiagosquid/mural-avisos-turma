@@ -3,6 +3,7 @@ package com.turma20211.mural.controller;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turma20211.mural.dto.RefreshTokenRequestDto;
@@ -121,7 +122,7 @@ public class UserController {
 
     @CrossOrigin("*")
     @PostMapping("/recovery")
-    public ResponseEntity recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
+    public ResponseEntity<?> recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
         try {
             String res = userService.changePassword(passwordRecoveryDto);
@@ -138,12 +139,15 @@ public class UserController {
             Map<String, String> tokens = userService.refreshToken(authorizationHeader);
             response.setStatus(HttpStatus.OK.value());
             new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-        } catch (UserNotFoundException | TokenException e) {
+        } catch (UserNotFoundException | TokenExpiredException | TokenException e) {
             log.error("Erro em: {}", e.getMessage());
             response.setHeader("error", e.getMessage());
             response.setStatus(HttpStatus.FORBIDDEN.value());
             Map<String, String> error = new HashMap<>();
             error.put("error_message", e.getMessage());
+            if (e.getClass().equals(TokenExpiredException.class)) {
+                error.put("code", "refreshToken.expired");
+            }
             response.setContentType("application/json");
             new ObjectMapper().writeValue(response.getOutputStream(), error);
         } catch (IOException e) {
