@@ -144,9 +144,10 @@ public class UserController {
             response.setHeader("error", e.getMessage());
             response.setStatus(HttpStatus.FORBIDDEN.value());
             Map<String, String> error = new HashMap<>();
-            error.put("error_message", e.getMessage());
+            error.put("errorMessage", e.getMessage());
             if (e.getClass().equals(TokenExpiredException.class)) {
                 error.put("code", "refreshToken.expired");
+                response.setStatus(498);
             }
             response.setContentType("application/json");
             new ObjectMapper().writeValue(response.getOutputStream(), error);
