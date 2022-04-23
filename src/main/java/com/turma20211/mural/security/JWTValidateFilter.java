@@ -2,6 +2,7 @@ package com.turma20211.mural.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.turma20211.mural.service.UserService;
 import com.turma20211.mural.utils.Role;
@@ -53,7 +54,14 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
         }
 
         String token = attribute.replace(PREFIX_ATTRIBUTE, "");
-        UsernamePasswordAuthenticationToken authenticationToken = getAuthenticationToken(token);
+
+        UsernamePasswordAuthenticationToken authenticationToken = null;
+        try {
+            authenticationToken = getAuthenticationToken(token);
+        } catch (Exception e) {
+            response.setStatus(498);
+            return;
+        }
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         chain.doFilter(request, response);
@@ -61,9 +69,14 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
     private UsernamePasswordAuthenticationToken getAuthenticationToken(String token) {
 
-        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
-                .build()
-                .verify(token);
+        DecodedJWT decodedJWT = null;
+        try {
+            decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
+                    .build()
+                    .verify(token);
+        } catch (JWTVerificationException | IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        }
 
         String username = decodedJWT.getSubject();
         String tokenType = decodedJWT.getId();
