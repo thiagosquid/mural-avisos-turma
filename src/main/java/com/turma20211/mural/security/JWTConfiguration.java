@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,7 +23,8 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
     private static final String[] SWAGGER_ENDPOINTS = {
             "/swagger-resources/**",
             "/swagger-ui.html",
-            "/v2/api-docs",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
             "/webjars/**"
     };
 
@@ -64,8 +66,9 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().authorizeRequests()
-                .antMatchers(SWAGGER_ENDPOINTS).permitAll()
+        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().authorizeRequests()
+                .antMatchers(SWAGGER_ENDPOINTS).permitAll().and().authorizeRequests()
                 .antMatchers(HttpMethod.POST,POST_ENDPOINTS).permitAll()
                 .antMatchers(HttpMethod.GET, GET_ENDPOINTS).permitAll()
                 .antMatchers(SUPERUSER_ENDPOINTS).hasAuthority(Role.SUPERUSER)
@@ -75,7 +78,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))
                 .addFilter(new JWTValidateFilter(authenticationManager(), userService))
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                ;
 
         http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 

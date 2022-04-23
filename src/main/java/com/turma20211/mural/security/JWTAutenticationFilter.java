@@ -86,7 +86,7 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         String accessToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
-                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION / 60000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION / 60)) //alterado para teste no front
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
         String refreshToken = JWT.create()
