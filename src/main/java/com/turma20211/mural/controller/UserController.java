@@ -139,15 +139,13 @@ public class UserController {
             Map<String, String> tokens = userService.refreshToken(authorizationHeader);
             response.setStatus(HttpStatus.OK.value());
             new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-        } catch (UserNotFoundException | TokenExpiredException | TokenException e) {
+        } catch (UserNotFoundException e) {
             log.error("Erro em: {}", e.getMessage());
             response.setHeader("error", e.getMessage());
             response.setStatus(HttpStatus.FORBIDDEN.value());
             Map<String, String> error = new HashMap<>();
             error.put("error_message", e.getMessage());
-            if (e.getClass().equals(TokenExpiredException.class)) {
-                error.put("code", "refreshToken.expired");
-            }
+
             response.setContentType("application/json");
             new ObjectMapper().writeValue(response.getOutputStream(), error);
         } catch (IOException e) {

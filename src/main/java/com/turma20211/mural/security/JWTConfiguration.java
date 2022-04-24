@@ -32,13 +32,14 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
             "/login",
             "/api/v1/user/signup",
             "/api/v1/user/recovery",
-            "/api/v1/file",
+            "/api/v1/file", // Included for tests
             "/api/v1/user/refreshtoken"
     };
 
     private static final String[] GET_ENDPOINTS = {
             "/api/v1/user/recovery",
-            "/api/v1/user/confirm"
+            "/api/v1/user/confirm",
+            "/api/v1/file" // Included for tests
     };
 
     private static final String[] SUPERUSER_ENDPOINTS = {
