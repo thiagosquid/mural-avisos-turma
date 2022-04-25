@@ -3,6 +3,7 @@ package com.muraldaturma.api.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.muraldaturma.api.configuration.PropertiesConfiguration;
@@ -11,6 +12,7 @@ import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.model.ConfirmationToken;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.UserRepository;
+import com.muraldaturma.api.security.JWTAutenticationFilter;
 import com.muraldaturma.api.utils.Mail;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -247,9 +249,14 @@ public class UserService {
         Map<String, String> tokens = new HashMap<>();
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String refreshToken = authorizationHeader.substring("Bearer ".length());
-            Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
-            JWTVerifier verifier = JWT.require(algorithm).build();
-            DecodedJWT decodedJWT = verifier.verify(refreshToken);
+            DecodedJWT decodedJWT = null;
+            try {
+                decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
+                        .build()
+                        .verify(refreshToken);
+            } catch (JWTVerificationException | IllegalArgumentException e) {
+                throw new JWTVerificationException(e.getMessage(), new Throwable("refreshToken.expired",null));
+            }
             Long id = Long.parseLong(decodedJWT.getClaim("userId").toString());
             User user = this.findById(id).get();
             String tokenId = decodedJWT.getId();

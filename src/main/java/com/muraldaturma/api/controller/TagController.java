@@ -39,11 +39,11 @@ public class TagController {
                 log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
                 return ResponseEntity.status(HttpStatus.CREATED).body(tagSaved);
             } else {
-                try {
+//                try {
                     tagService.createAll(tagList);
-                } catch (Exception e) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-                }
+//                } catch (Exception e) {
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//                }
                 log.info("Criadas as seguintes TAG's {}", tagList);
                 return ResponseEntity.status(HttpStatus.CREATED).body(tagList);
             }
@@ -55,7 +55,6 @@ public class TagController {
 
     @DeleteMapping("{tagIdList}")
     public ResponseEntity<?> delete(@PathVariable List<Integer> tagIdList) {
-        try {
             if (tagIdList.size() == 1) {
                 tagService.deleteById(tagIdList.get(0));
                 log.info("Deletada tag com id {}", tagIdList.get(0));
@@ -64,9 +63,6 @@ public class TagController {
                 log.info("Deletadas tags com os IDs {}", tagIdList);
             }
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
 }

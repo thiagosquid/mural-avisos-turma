@@ -3,7 +3,9 @@ package com.muraldaturma.api.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muraldaturma.api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class JWTValidateFilter extends BasicAuthenticationFilter {
@@ -55,8 +59,13 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
         UsernamePasswordAuthenticationToken authenticationToken = null;
         try {
             authenticationToken = getAuthenticationToken(token);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            Map<String, String> tokens = new HashMap<>();
             response.setStatus(498);
+            tokens.put("message", "Token de acesso expirado");
+            tokens.put("code", e.getCause().getMessage());
+            response.setContentType("application/json");
+            new ObjectMapper().writeValue(response.getOutputStream(), tokens);
             return;
         }
 
@@ -72,7 +81,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
                     .build()
                     .verify(token);
         } catch (JWTVerificationException | IllegalArgumentException e) {
-            throw new JWTVerificationException(e.getMessage());
+            throw new JWTVerificationException(e.getMessage(), new Throwable("accessToken.expired",null));
         }
 
         String username = decodedJWT.getSubject();

@@ -2,7 +2,8 @@ package com.muraldaturma.api.exception.handler;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.muraldaturma.api.exception.TagExistsException;
+import com.muraldaturma.api.exception.TagException;
+import com.muraldaturma.api.exception.TokenException;
 import com.muraldaturma.api.utils.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +36,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   HttpHeaders headers, HttpStatus status, WebRequest request) {
         String message = messageSource.getMessage("invalid.message", null, LocaleContextHolder.getLocale());
         String code = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
-        List<ErrorResponse> errorResponses = Arrays.asList(new ErrorResponse(message, code));
+        List<ErrorResponse> errorResponses = List.of(new ErrorResponse(message, code));
         return handleExceptionInternal(ex, errorResponses, headers, HttpStatus.BAD_REQUEST, request);
     }
 
@@ -45,13 +47,22 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, errorResponses, headers, HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler({JWTVerificationException.class, TokenExpiredException.class, TagExistsException.class})
-    protected ResponseEntity<Object> handleRuntimeException(RuntimeException ex,
+    @ExceptionHandler({TokenExpiredException.class, TokenException.class, JWTVerificationException.class})
+    protected ResponseEntity<Object> handleTokenException(RuntimeException ex,
                                                                            WebRequest request) {
         String message = ex.getMessage();
-        String code = ex.getClass().getSimpleName();
-        List<ErrorResponse> errorResponses = Arrays.asList(new ErrorResponse(message, code));
-        return handleExceptionInternal(ex, errorResponses, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler({TagException.class})
+    protected ResponseEntity<Object> handleBadRequestsException(RuntimeException ex,
+                                                            WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     private List<ErrorResponse> createErrorList(BindingResult bindingResult) {

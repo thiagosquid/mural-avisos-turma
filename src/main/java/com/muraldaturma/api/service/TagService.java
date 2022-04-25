@@ -1,6 +1,6 @@
 package com.muraldaturma.api.service;
 
-import com.muraldaturma.api.exception.TagExistsException;
+import com.muraldaturma.api.exception.TagException;
 import com.muraldaturma.api.model.Tag;
 import com.muraldaturma.api.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,33 +19,40 @@ public class TagService {
         return tagRepository.findAll();
     }
 
-    public Tag create(Tag tag) throws TagExistsException {
+    public Tag create(Tag tag) throws TagException {
         if (verifyIfExists(tag.getDescription())) {
-            throw new TagExistsException(tag.getDescription());
+            throw new TagException("Já existe uma tag com essa descrição: ".concat(tag.getDescription()), "tag.exists");
         }
 
         return tagRepository.save(tag);
     }
 
-    public void createAll(List<Tag> tagList) throws Exception {
+    public void createAll(List<Tag> tagList) {
+        boolean exists = false;
+        StringBuilder tagsExistent = new StringBuilder();
         for(Tag tag : tagList){
             if (verifyIfExists(tag.getDescription())) {
-                throw new Exception("TAG " + tag.getDescription() + " já existe");
+                tagsExistent.append(tag.getDescription()).append(", ");
+                exists = true;
             }
+        }
+        tagsExistent.deleteCharAt(tagsExistent.length()-2);
+        if (exists) {
+            throw new TagException("Essas tags já existem: ".concat(tagsExistent.toString().trim()), "tag.exists");
         }
         tagRepository.saveAllAndFlush(tagList);
     }
 
-    public void deleteById(Integer tagId) throws Exception {
+    public void deleteById(Integer tagId) {
         if (!verifyIfExists(tagId)) {
-            throw new Exception("Tag informada não existe");
+            throw new TagException("Tag informada não existe", "tag.notExistent");
         }
         tagRepository.deleteById(tagId);
     }
 
-    public void deleteAllById(List<Integer> listTagsIds) throws Exception {
+    public void deleteAllById(List<Integer> listTagsIds) {
         if (!verifyIfExists(listTagsIds)) {
-            throw new Exception("Tags informadas não existem");
+            throw new TagException("Tags informadas não existe", "tag.notExistent");
         }
         tagRepository.deleteAllById(listTagsIds);
     }
