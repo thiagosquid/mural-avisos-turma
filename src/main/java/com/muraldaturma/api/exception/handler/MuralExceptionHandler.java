@@ -5,6 +5,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.muraldaturma.api.exception.TagException;
 import com.muraldaturma.api.exception.TokenException;
 import com.muraldaturma.api.utils.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
@@ -26,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice
+@Slf4j
 public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Autowired
@@ -53,6 +56,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
         return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
@@ -62,6 +66,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
         return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
@@ -71,6 +76,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         for (FieldError fieldError : bindingResult.getFieldErrors()) {
             String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
             String code = fieldError.getCode();
+            log.error(message);
             errorResponses.add(new ErrorResponse(message, code));
         }
         return errorResponses;
