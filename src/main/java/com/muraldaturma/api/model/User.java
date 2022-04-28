@@ -8,12 +8,14 @@ import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.*;
 
 @Entity
 @Getter
 @Setter
 @ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_user") //alterado o nome pq estava dando conflito no banco da AWS
@@ -24,20 +26,29 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     @Column(unique = true, length = 25)
     private String username;
 
+    @NotBlank
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @NotBlank
     @Column(nullable = false, length = 20)
     private String firstName;
 
+    @NotBlank
     @Column(nullable = false, length = 60)
     private String lastName;
 
+    @NotBlank
     @Column(unique = true, length = 80)
     private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 25, nullable = false)
+    private Role role = Role.USER;
 
     @Column(length = 100)
     private String avatar;
@@ -48,8 +59,6 @@ public class User {
     @JsonIgnore
     private Boolean enabled = false;
 
-    @Column(length = 25)
-    private String role = Role.USER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnore
@@ -81,6 +90,7 @@ public class User {
             inverseJoinColumns = {
                     @JoinColumn(name = "class_id", referencedColumnName = "id",
                             nullable = false)})
+    @ToString.Exclude
     private Set<Class> classList = new HashSet<>();
 
     @Override

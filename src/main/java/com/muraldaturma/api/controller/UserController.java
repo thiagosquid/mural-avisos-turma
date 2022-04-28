@@ -12,6 +12,7 @@ import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.security.JWTValidateFilter;
 import com.muraldaturma.api.service.UserService;
+import com.muraldaturma.api.utils.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,7 +64,7 @@ public class UserController {
     public void setAdmin(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             User user = userService.findById(id).get();
-            user.setRole("ADMIN");
+            user.setRole(Role.ADMIN);
             String token = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE).substring("Bearer ".length());
             Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
             JWTVerifier verifier = JWT.require(algorithm).build();
