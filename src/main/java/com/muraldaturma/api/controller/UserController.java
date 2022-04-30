@@ -49,12 +49,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Long id) {
+    public ResponseEntity<?> getById(@PathVariable Long id) {
         Optional<User> user = null;
         try {
             user = userService.findById(id);
         } catch (UserNotFoundException e) {
-            e.getMessage();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));

@@ -77,8 +77,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))
-                .addFilter(new JWTValidateFilter(authenticationManager(), userService))
-                ;
+                .addFilter(new JWTValidateFilter(authenticationManager(), userService));
 
         http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 

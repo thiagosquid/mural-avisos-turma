@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.ConfirmationToken;
 import com.muraldaturma.api.model.Post;
+import com.muraldaturma.api.utils.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,7 @@ public class UserDto {
     private Boolean locked = false;
     @JsonIgnore
     private Boolean enabled = false;
-    private String role;
+    private Role role;
 
     @JsonIgnore
     private List<Post> postsList = new ArrayList<>();

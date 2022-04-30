@@ -1,5 +1,6 @@
 package com.muraldaturma.api.model;
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
@@ -15,7 +16,6 @@ import java.util.*;
 @Getter
 @Setter
 @ToString
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_user") //alterado o nome pq estava dando conflito no banco da AWS
@@ -70,7 +70,7 @@ public class User {
     @ToString.Exclude
     private List<ConfirmationToken> tokenList = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(name = "tb_users_favorites_posts",
             joinColumns = {
                     @JoinColumn(name = "user_id", referencedColumnName = "id",
@@ -79,10 +79,11 @@ public class User {
                     @JoinColumn(name = "post_id", referencedColumnName = "id",
                             nullable = false, updatable = false)})
     @ToString.Exclude
+    @JsonIgnore
     private List<Post> favoritesPosts = new ArrayList<>();
 
     @OrderBy
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(name = "tb_users_classes",
             joinColumns = {
                     @JoinColumn(name = "user_id", referencedColumnName = "id",
