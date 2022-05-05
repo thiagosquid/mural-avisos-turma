@@ -1,5 +1,6 @@
 package com.muraldaturma.api.controller;
 
+import com.muraldaturma.api.dto.TagDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
 import com.muraldaturma.api.model.Tag;
 import com.muraldaturma.api.service.TagService;
@@ -28,6 +29,12 @@ public class TagController {
     @ResponseStatus(HttpStatus.OK)
     public List<Tag> getAll() {
         return tagService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public TagDTO getById(@PathVariable(value = "id") Integer id) {
+        return tagService.getById(id);
     }
 
     @PostMapping

@@ -1,22 +1,32 @@
 package com.muraldaturma.api.service;
 
+import com.muraldaturma.api.dto.TagDTO;
+import com.muraldaturma.api.dto.mapper.TagMapper;
 import com.muraldaturma.api.exception.TagException;
 import com.muraldaturma.api.model.Tag;
 import com.muraldaturma.api.repository.TagRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class TagService {
 
-    private final TagRepository tagRepository;
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
+    private TagMapper tagMapper;
 
     public List<Tag> getAll() {
         return tagRepository.findAll();
+    }
+
+    public TagDTO getById(Integer id) {
+        return tagMapper.toDTO(tagRepository.findById(id).get());
     }
 
     public Tag create(Tag tag) throws TagException {
@@ -30,13 +40,13 @@ public class TagService {
     public void createAll(List<Tag> tagList) {
         boolean exists = false;
         StringBuilder tagsExistent = new StringBuilder();
-        for(Tag tag : tagList){
+        for (Tag tag : tagList) {
             if (verifyIfExists(tag.getDescription())) {
                 tagsExistent.append(tag.getDescription()).append(", ");
                 exists = true;
             }
         }
-        tagsExistent.deleteCharAt(tagsExistent.length()-2);
+        tagsExistent.deleteCharAt(tagsExistent.length() - 2);
         if (exists) {
             throw new TagException("Essas tags já existem: ".concat(tagsExistent.toString().trim()), "tag.exists");
         }
