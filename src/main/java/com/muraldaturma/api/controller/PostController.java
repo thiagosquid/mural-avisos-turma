@@ -38,6 +38,8 @@ public class PostController {
 
     @GetMapping(value = "/{postId}")
     public ResponseEntity<PostDTO> getById(@PathVariable Long postId){
+
+//        PostMapper postMapper = PostMapper.INSTANCE;
         Optional<Post> post = postService.getById(postId);
         if(post.isPresent()){
             return ResponseEntity.status(HttpStatus.OK).body(postMapper.toDTO(post.get()));

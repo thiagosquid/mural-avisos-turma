@@ -27,7 +27,7 @@ public class TagController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Tag> getAll() {
+    public List<TagDTO> getAll() {
         return tagService.getAll();
     }
 
@@ -38,10 +38,10 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody List<Tag> tagList, HttpServletResponse response) {
+    public ResponseEntity<?> create(@RequestBody List<TagDTO> tagList, HttpServletResponse response) {
 
             if (tagList.size() == 1) {
-                Tag tagSaved = tagService.create(tagList.get(0));
+                TagDTO tagSaved = tagService.create(tagList.get(0));
                 publisher.publishEvent(new CreatedResourceEvent(this, response, tagSaved.getId().longValue()));
                 log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
                 return ResponseEntity.status(HttpStatus.CREATED).body(tagSaved);

@@ -1,6 +1,7 @@
 package com.muraldaturma.api.data;
 
 import com.muraldaturma.api.model.User;
+import com.muraldaturma.api.utils.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,7 @@ public class UserDetailData implements UserDetails {
     private String avatar;
     private Boolean accountNonLocked;
     private Boolean enabled;
-    private String role;
+    private Role role;
 
 
     public UserDetailData(Optional<User> user) {
@@ -47,13 +48,13 @@ public class UserDetailData implements UserDetails {
         return user.orElse(new User()).getAvatar();
     }
 
-    public String getRole() {
+    public Role getRole() {
         return user.orElse(new User()).getRole();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.asList(new SimpleGrantedAuthority(user.orElse(new User()).getRole()));
+        return Arrays.asList(new SimpleGrantedAuthority(user.orElse(new User()).getRole().toString()));
     }
 
     @Override

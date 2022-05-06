@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muraldaturma.api.service.UserService;
+import com.muraldaturma.api.utils.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -87,7 +88,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
         String username = decodedJWT.getSubject();
         String tokenType = decodedJWT.getId();
         Long userId = decodedJWT.getClaim("userId").asLong();
-        String role = "";
+        Role role = Role.USER;
         try {
             role = userService.findById(userId).get().getRole();
         } catch (Exception e) {
@@ -96,7 +97,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 //        String role = decodedJWT.getClaim("role").asString();
 
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(role));
+        roles.add(new SimpleGrantedAuthority(role.toString()));
 
         if (username == null || tokenType != null) {
             return null;

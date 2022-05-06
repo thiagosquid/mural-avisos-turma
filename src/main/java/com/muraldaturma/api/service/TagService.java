@@ -21,36 +21,38 @@ public class TagService {
     @Autowired
     private TagMapper tagMapper;
 
-    public List<Tag> getAll() {
-        return tagRepository.findAll();
+    public List<TagDTO> getAll() {
+//        TagMapper tagMapper = TagMapper.INSTANCE;
+        return tagMapper.toListDTO(tagRepository.findAll());
     }
 
     public TagDTO getById(Integer id) {
+
         return tagMapper.toDTO(tagRepository.findById(id).get());
     }
 
-    public Tag create(Tag tag) throws TagException {
+    public TagDTO create(TagDTO tag) throws TagException {
         if (verifyIfExists(tag.getDescription())) {
             throw new TagException("Já existe uma tag com essa descrição: ".concat(tag.getDescription()), "tag.exists");
         }
 
-        return tagRepository.save(tag);
+        return tagMapper.toDTO(tagRepository.save(tagMapper.toModel(tag)));
     }
 
-    public void createAll(List<Tag> tagList) {
+    public void createAll(List<TagDTO> tagList) {
         boolean exists = false;
         StringBuilder tagsExistent = new StringBuilder();
-        for (Tag tag : tagList) {
+        for (TagDTO tag : tagList) {
             if (verifyIfExists(tag.getDescription())) {
                 tagsExistent.append(tag.getDescription()).append(", ");
                 exists = true;
             }
         }
-        tagsExistent.deleteCharAt(tagsExistent.length() - 2);
         if (exists) {
+            tagsExistent.deleteCharAt(tagsExistent.length() - 2);
             throw new TagException("Essas tags já existem: ".concat(tagsExistent.toString().trim()), "tag.exists");
         }
-        tagRepository.saveAllAndFlush(tagList);
+        tagRepository.saveAllAndFlush(tagMapper.toListModel(tagList));
     }
 
     public void deleteById(Integer tagId) {

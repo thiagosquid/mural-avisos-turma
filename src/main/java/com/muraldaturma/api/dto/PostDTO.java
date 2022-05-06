@@ -27,10 +27,13 @@ public class PostDTO {
     private LocalDateTime createdAt;
 
     @NotNull
+//    @JsonIgnoreProperties(value = "postList")
     private TagDTO tag;
 
-//    private User user;
-//
+//    @NotNull
+//    @JsonIgnoreProperties(value = "postList")
+//    private UserDTO user;
+
 //    private Class aClass;
 
 //    private List<Comment> commentList = new ArrayList<>();

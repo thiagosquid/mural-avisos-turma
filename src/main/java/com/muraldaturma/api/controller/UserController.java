@@ -13,7 +13,9 @@ import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.security.JWTValidateFilter;
 import com.muraldaturma.api.service.UserService;
+import com.muraldaturma.api.utils.Role;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,6 +38,9 @@ import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWOR
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
 
+    @Autowired
+    private UserMapper userMapper;
+
     private final UserService userService;
     private final PasswordEncoder encoder;
 
@@ -50,22 +55,21 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Long id) {
+    public ResponseEntity<?> getById(@PathVariable Long id) {
         Optional<User> user = null;
         try {
             user = userService.findById(id);
         } catch (UserNotFoundException e) {
-            e.getMessage();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
+        return ResponseEntity.status(HttpStatus.OK).body(userMapper.toDTO(user.get()));
     }
 
     @PostMapping("/set-admin/{id}")
     public void setAdmin(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             User user = userService.findById(id).get();
-            user.setRole("ADMIN");
+            user.setRole(Role.ADMIN);
             String token = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE).substring("Bearer ".length());
             Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
             JWTVerifier verifier = JWT.require(algorithm).build();

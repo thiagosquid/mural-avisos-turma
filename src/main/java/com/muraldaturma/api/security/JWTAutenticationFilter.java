@@ -50,7 +50,7 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         }
 
         Collection<SimpleGrantedAuthority> authority = new ArrayList<>();
-        authority.add(new SimpleGrantedAuthority(user.getRole()));
+        authority.add(new SimpleGrantedAuthority(user.getRole().toString()));
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 user.getUsername(),
