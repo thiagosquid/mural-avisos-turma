@@ -1,5 +1,8 @@
 package com.muraldaturma.api.service;
 
+import com.muraldaturma.api.dto.PostDTO;
+import com.muraldaturma.api.dto.mapper.ClassMapper;
+import com.muraldaturma.api.dto.mapper.PostMapper;
 import com.muraldaturma.api.exception.ClassNotFoundException;
 import com.muraldaturma.api.exception.UserNotFoundException;
 import com.muraldaturma.api.model.Class;
@@ -23,10 +26,19 @@ public class PostService {
     private PostRepository postRepository;
 
     @Autowired
+    private PostMapper postMapper;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
+    private ClassService classService;
+
+    @Autowired
     private ClassRepository classRepository;
+
+    @Autowired
+    private ClassMapper classMapper;
 
     public List<Post> getAll(){
         return postRepository.findAll();
@@ -46,8 +58,13 @@ public class PostService {
         return new ArrayList<Post>();
     }
 
-    public Post insert(Post post){
-        return postRepository.save(post);
+    public PostDTO insert(PostDTO postDTO, Long userId, Long classId){
+        Class aClass = classMapper.toModel(classService.getById(classId));
+        User user = userService.findById(userId).get();
+        Post post = postMapper.toModel(postDTO);
+        post.setUser(user);
+        post.setAClass(aClass);
+        return postMapper.toDTO(postRepository.save(post));
     }
 
     public void delete(Long id){

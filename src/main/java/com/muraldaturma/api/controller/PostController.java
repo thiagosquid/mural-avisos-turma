@@ -37,11 +37,11 @@ public class PostController {
 //    }
 
     @GetMapping(value = "/{postId}")
-    public ResponseEntity<PostDTO> getById(@PathVariable Long postId){
+    public ResponseEntity<PostDTO> getById(@PathVariable Long postId) {
 
 //        PostMapper postMapper = PostMapper.INSTANCE;
         Optional<Post> post = postService.getById(postId);
-        if(post.isPresent()){
+        if (post.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK).body(postMapper.toDTO(post.get()));
         }
 
@@ -49,7 +49,7 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllPageable(Pageable pageable, @RequestParam("classId") Long classId){
+    public ResponseEntity<?> getAllPageable(Pageable pageable, @RequestParam("classId") Long classId) {
         try {
             Page<Post> postListPageable = postService.getAllByClassPageable(pageable, classId);
             return ResponseEntity.status(HttpStatus.OK).body(postListPageable);
@@ -66,17 +66,20 @@ public class PostController {
     }
 
 
-    @PostMapping(value = "/{userId}")
-    public ResponseEntity<Post> insert(@RequestBody Post post, @PathVariable Long userId) throws UserNotFoundException {
+    @PostMapping
+    public ResponseEntity<PostDTO> insert(@RequestBody PostDTO postDTO
+            ,@RequestParam(value = "userId") Long userId
+            ,@RequestParam(value = "classId") Long classId) {
 
-        post.setId(null);
+        postDTO.setId(null);
+        PostDTO postSaved = postService.insert(postDTO, userId, classId);
 //        post.setUser(userService.findById(userId).get());
-        return ResponseEntity.ok(postService.insert(post));
+        return ResponseEntity.ok(postSaved);
     }
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id){
+    public void delete(@PathVariable Long id) {
         postService.delete(id);
     }
 }

@@ -1,6 +1,7 @@
 package com.muraldaturma.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.muraldaturma.api.model.Class;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,11 +31,11 @@ public class PostDTO {
 //    @JsonIgnoreProperties(value = "postList")
     private TagDTO tag;
 
-//    @NotNull
+    @NotNull
 //    @JsonIgnoreProperties(value = "postList")
-//    private UserDTO user;
+    private UserDTO user;
 
-//    private Class aClass;
+    private ClassDTO aClass;
 
 //    private List<Comment> commentList = new ArrayList<>();
 //

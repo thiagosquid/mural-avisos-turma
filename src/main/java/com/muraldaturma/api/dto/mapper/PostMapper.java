@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Named("PostMapper")
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {TagMapper.class})
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {TagMapper.class, UserMapper.class, ClassMapper.class})
 public interface PostMapper {
 //    PostMapper INSTANCE = Mappers.getMapper( PostMapper.class );
 
