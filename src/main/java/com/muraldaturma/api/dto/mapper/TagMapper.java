@@ -34,4 +34,6 @@ public interface TagMapper {
             @Mapping(target = "postList", ignore = true)
     })
     List<Tag> toListModel(List<TagDTO> dtoList);
+
+    TagDTO map(Tag value);
 }
