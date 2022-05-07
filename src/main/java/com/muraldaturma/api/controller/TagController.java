@@ -2,7 +2,6 @@ package com.muraldaturma.api.controller;
 
 import com.muraldaturma.api.dto.TagDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
-import com.muraldaturma.api.model.Tag;
 import com.muraldaturma.api.service.TagService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,20 +39,20 @@ public class TagController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody List<TagDTO> tagList, HttpServletResponse response) {
 
-            if (tagList.size() == 1) {
-                TagDTO tagSaved = tagService.create(tagList.get(0));
-                publisher.publishEvent(new CreatedResourceEvent(this, response, tagSaved.getId().longValue()));
-                log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
-                return ResponseEntity.status(HttpStatus.CREATED).body(tagSaved);
-            } else {
+        if (tagList.size() == 1) {
+            TagDTO tagSaved = tagService.create(tagList.get(0));
+            publisher.publishEvent(new CreatedResourceEvent(this, response, tagSaved.getId().longValue()));
+            log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
+            return ResponseEntity.status(HttpStatus.CREATED).body(tagSaved);
+        } else {
 //                try {
-                    tagService.createAll(tagList);
+            tagService.createAll(tagList);
 //                } catch (Exception e) {
 //                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 //                }
-                log.info("Criadas as seguintes TAG's {}", tagList);
-                return ResponseEntity.status(HttpStatus.CREATED).body(tagList);
-            }
+            log.info("Criadas as seguintes TAG's {}", tagList);
+            return ResponseEntity.status(HttpStatus.CREATED).body(tagList);
+        }
 //        } catch (TagExistsException e) {
 //            log.error(e.getMessage());
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -62,14 +61,14 @@ public class TagController {
 
     @DeleteMapping("{tagIdList}")
     public ResponseEntity<?> delete(@PathVariable List<Integer> tagIdList) {
-            if (tagIdList.size() == 1) {
-                tagService.deleteById(tagIdList.get(0));
-                log.info("Deletada tag com id {}", tagIdList.get(0));
-            } else {
-                tagService.deleteAllById(tagIdList);
-                log.info("Deletadas tags com os IDs {}", tagIdList);
-            }
-            return ResponseEntity.noContent().build();
+        if (tagIdList.size() == 1) {
+            tagService.deleteById(tagIdList.get(0));
+            log.info("Deletada tag com id {}", tagIdList.get(0));
+        } else {
+            tagService.deleteAllById(tagIdList);
+            log.info("Deletadas tags com os IDs {}", tagIdList);
+        }
+        return ResponseEntity.noContent().build();
     }
 
 }

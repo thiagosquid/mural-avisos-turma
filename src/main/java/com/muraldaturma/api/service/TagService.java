@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-//@RequiredArgsConstructor
 public class TagService {
 
     @Autowired
@@ -22,13 +21,15 @@ public class TagService {
     private TagMapper tagMapper;
 
     public List<TagDTO> getAll() {
-//        TagMapper tagMapper = TagMapper.INSTANCE;
         return tagMapper.toListDTO(tagRepository.findAll());
     }
 
     public TagDTO getById(Integer id) {
-
-        return tagMapper.toDTO(tagRepository.findById(id).get());
+        Optional<Tag> tagFound = tagRepository.findById(id);
+        if(tagFound.isEmpty()){
+            throw new TagException("Tag não encontrada com id: ".concat(id.toString()), "tag.notFound");
+        }
+        return tagMapper.toDTO(tagFound.get());
     }
 
     public TagDTO create(TagDTO tag) throws TagException {
