@@ -26,7 +26,7 @@ public interface TagMapper {
 //    TagDTO toDTOWithoutPost(Tag model);
 
     @Mappings({
-            @Mapping(target = "postList", ignore = true)
+//            @Mapping(target = "postList", ignore = true)
     })
     List<TagDTO> toListDTO(List<Tag> modelList);
 

@@ -16,7 +16,7 @@ class TagRepositoryTest {
     private TagRepository tagRepository;
 
     // JUnit test for save tag operation
-    @DisplayName("JUnit test for save tag operation")
+    /*@DisplayName("JUnit test for save tag operation")
     @Test
     void givenTagObject_whenSave_thenReturnSavedTag() {
         // given - precondition or setup
@@ -31,8 +31,9 @@ class TagRepositoryTest {
         Assertions.assertThat(savedTag).isNotNull();
         Assertions.assertThat(savedTag.getId()).isGreaterThan(0);
 
-    }
+    }*/
 
+    /*
     @Test
     void givenTagList_whenFindAll_thenReturnTagList() {
         // given - precondition or setup
@@ -53,7 +54,7 @@ class TagRepositoryTest {
         Assertions.assertThat(tagList.size()).isEqualTo(2);
         Assertions.assertThat(tagList).isNotEmpty();
 
-    }
+    }*/
 
     // JUnit test for
     @Test

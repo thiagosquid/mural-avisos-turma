@@ -45,7 +45,7 @@ public class UserService {
         if (user.isPresent()) {
             return user;
         } else {
-            throw new UserNotFoundException(id);
+            throw new UserNotFoundException(String.format("Nao foi encontrado usuario com o id: ",id),"user.notFound");
         }
     }
 
@@ -96,7 +96,7 @@ public class UserService {
             if (ct.isPresent() && existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt())) {
                 throw new EmailAlreadyExistsException();
             } else if (existsUsername) {
-                throw new UsernameAlreadyExistsException(user.getUsername());
+                throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", user.getUsername()),"user.alreadyExist");
             }
 
             User userSaved = userRepository.save(user);
@@ -289,11 +289,13 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(new User());
     }
 
-    private User verifyIfExists(Long id) throws UserNotFoundException {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    private User verifyIfExists(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o id: ",id),"user.notFound"));
     }
 
-    private User verifyIfExists(String username) throws UserNotFoundException {
-        return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+    private User verifyIfExists(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o username: ",username),"user.notFound"));
     }
 }
