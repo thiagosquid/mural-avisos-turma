@@ -19,6 +19,10 @@ public class ClassDTO {
     private Integer semester;
 
     @NotNull
-    private Course course;
+    private CourseDTO course;
 
+    @Override
+    public String toString() {
+        return course.getAcronym().concat(year.toString()).concat(semester.toString());
+    }
 }

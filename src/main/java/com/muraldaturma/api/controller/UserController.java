@@ -3,7 +3,6 @@ package com.muraldaturma.api.controller;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muraldaturma.api.dto.RefreshTokenRequestDto;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +37,7 @@ import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWOR
 public class UserController {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserMapper userMapper; //TODO passar mapper para a service e implementar exception handler nessa classe
 
     private final UserService userService;
     private final PasswordEncoder encoder;
@@ -108,7 +106,7 @@ public class UserController {
         } catch (MessagingException | IOException e) {
             e.printStackTrace();
         }
-        return ResponseEntity.ok().body(confirmation);
+        return ResponseEntity.ok().body("ReturnToLogin.html");
     }
 
     @CrossOrigin("*")

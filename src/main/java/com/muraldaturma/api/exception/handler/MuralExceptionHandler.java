@@ -2,10 +2,8 @@ package com.muraldaturma.api.exception.handler;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.muraldaturma.api.exception.CourseAlreadyExistsException;
-import com.muraldaturma.api.exception.CourseNotFoundException;
-import com.muraldaturma.api.exception.TagException;
-import com.muraldaturma.api.exception.TokenException;
+import com.muraldaturma.api.exception.ClassNotFoundException;
+import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.utils.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +19,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice
@@ -54,7 +49,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({TokenExpiredException.class, TokenException.class, JWTVerificationException.class})
     protected ResponseEntity<Object> handleTokenException(RuntimeException ex,
-                                                                           WebRequest request) {
+                                                          WebRequest request) {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
@@ -64,7 +59,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({CourseNotFoundException.class, CourseAlreadyExistsException.class})
     protected ResponseEntity<Object> handleCourseException(RuntimeException ex,
-                                                          WebRequest request) {
+                                                           WebRequest request) {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
@@ -74,7 +69,27 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({TagException.class})
     protected ResponseEntity<Object> handleBadRequestsException(RuntimeException ex,
-                                                            WebRequest request) {
+                                                                WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({UsernameAlreadyExistsException.class, UserNotFoundException.class, UserInvalidEmailException.class})
+    protected ResponseEntity<Object> handleUserException(RuntimeException ex,
+                                                         WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({ClassNotFoundException.class})
+    protected ResponseEntity<Object> handleClassException(RuntimeException ex,
+                                                          WebRequest request) {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);

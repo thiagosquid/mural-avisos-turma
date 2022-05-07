@@ -56,7 +56,7 @@ public class PostService {
 
     public Page<Post> getAllByClassPageable(Pageable pageable, Long classId) throws ClassNotFoundException {
         Class classToFilter = classRepository.findById(classId)
-                .orElseThrow(() -> new ClassNotFoundException(classId));
+                .orElseThrow(() -> new ClassNotFoundException(String.format("Não foi encontrada classe com o id:  %d",classId),"class.notFound"));
 
         return postRepository.findByaClass(classToFilter, pageable);
     }

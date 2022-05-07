@@ -60,7 +60,7 @@ public class User {
     private Boolean enabled = false;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<Post> postsList = new ArrayList<>();
 
@@ -69,7 +69,7 @@ public class User {
     @ToString.Exclude
     private List<ConfirmationToken> tokenList = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "tb_users_favorites_posts",
             joinColumns = {
                     @JoinColumn(name = "user_id", referencedColumnName = "id",
@@ -82,7 +82,7 @@ public class User {
     private List<Post> favoritesPosts = new ArrayList<>();
 
     @OrderBy
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "tb_users_classes",
             joinColumns = {
                     @JoinColumn(name = "user_id", referencedColumnName = "id",
@@ -91,7 +91,7 @@ public class User {
                     @JoinColumn(name = "class_id", referencedColumnName = "id",
                             nullable = false)})
     @ToString.Exclude
-    private Set<Class> classList = new HashSet<>();
+    private List<Class> classList = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
