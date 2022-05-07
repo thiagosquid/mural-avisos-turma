@@ -60,8 +60,7 @@ public class User {
     private Boolean enabled = false;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @ToString.Exclude
     private List<Post> postsList = new ArrayList<>();
 

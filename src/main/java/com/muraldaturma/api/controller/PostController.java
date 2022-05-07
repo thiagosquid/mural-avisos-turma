@@ -1,6 +1,6 @@
 package com.muraldaturma.api.controller;
 
-import com.muraldaturma.api.dto.PostDto;
+import com.muraldaturma.api.dto.PostDTO;
 import com.muraldaturma.api.dto.mapper.PostMapper;
 import com.muraldaturma.api.exception.ClassNotFoundException;
 import com.muraldaturma.api.exception.UserNotFoundException;
@@ -23,6 +23,9 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+    @Autowired
+    private PostMapper postMapper;
+
 //    @Autowired
 //    private UserService userService;
 
@@ -34,14 +37,15 @@ public class PostController {
 //    }
 
     @GetMapping(value = "/{postId}")
-    public ResponseEntity<PostDto> getById(@PathVariable Long postId){
+    public ResponseEntity<PostDTO> getById(@PathVariable Long postId){
+
+//        PostMapper postMapper = PostMapper.INSTANCE;
         Optional<Post> post = postService.getById(postId);
         if(post.isPresent()){
-            return ResponseEntity.status(HttpStatus.OK).body(PostMapper.toDto(post.get()));
+            return ResponseEntity.status(HttpStatus.OK).body(postMapper.toDTO(post.get()));
         }
 
         return ResponseEntity.notFound().build();
-
     }
 
     @GetMapping

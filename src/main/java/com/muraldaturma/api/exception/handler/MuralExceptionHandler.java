@@ -2,6 +2,8 @@ package com.muraldaturma.api.exception.handler;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.muraldaturma.api.exception.CourseAlreadyExistsException;
+import com.muraldaturma.api.exception.CourseNotFoundException;
 import com.muraldaturma.api.exception.TagException;
 import com.muraldaturma.api.exception.TokenException;
 import com.muraldaturma.api.utils.ErrorResponse;
@@ -53,6 +55,16 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({TokenExpiredException.class, TokenException.class, JWTVerificationException.class})
     protected ResponseEntity<Object> handleTokenException(RuntimeException ex,
                                                                            WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler({CourseNotFoundException.class, CourseAlreadyExistsException.class})
+    protected ResponseEntity<Object> handleCourseException(RuntimeException ex,
+                                                          WebRequest request) {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);

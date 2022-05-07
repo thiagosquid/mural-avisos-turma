@@ -66,8 +66,7 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and().authorizeRequests()
+        http.csrf().disable().authorizeRequests()
                 .antMatchers(SWAGGER_ENDPOINTS).permitAll().and().authorizeRequests()
                 .antMatchers(HttpMethod.POST,POST_ENDPOINTS).permitAll()
                 .antMatchers(HttpMethod.GET, GET_ENDPOINTS).permitAll()
@@ -77,7 +76,8 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAutenticationFilter(passwordEncoder, authenticationManager()))
-                .addFilter(new JWTValidateFilter(authenticationManager(), userService));
+                .addFilter(new JWTValidateFilter(authenticationManager(), userService))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 

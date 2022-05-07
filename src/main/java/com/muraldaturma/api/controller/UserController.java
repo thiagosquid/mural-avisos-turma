@@ -15,8 +15,10 @@ import com.muraldaturma.api.security.JWTValidateFilter;
 import com.muraldaturma.api.service.UserService;
 import com.muraldaturma.api.utils.Role;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +37,9 @@ import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWOR
 @RestController
 @RequestMapping(value = "/api/v1/user")
 public class UserController {
+
+    @Autowired
+    private UserMapper userMapper;
 
     private final UserService userService;
     private final PasswordEncoder encoder;
@@ -57,7 +62,7 @@ public class UserController {
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
+        return ResponseEntity.status(HttpStatus.OK).body(userMapper.toDTO(user.get()));
     }
 
     @PostMapping("/set-admin/{id}")

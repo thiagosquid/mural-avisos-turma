@@ -1,46 +1,59 @@
 package com.muraldaturma.api.service;
 
+import com.muraldaturma.api.dto.TagDTO;
+import com.muraldaturma.api.dto.mapper.TagMapper;
 import com.muraldaturma.api.exception.TagException;
 import com.muraldaturma.api.model.Tag;
 import com.muraldaturma.api.repository.TagRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class TagService {
 
-    private final TagRepository tagRepository;
+    @Autowired
+    private TagRepository tagRepository;
 
-    public List<Tag> getAll() {
-        return tagRepository.findAll();
+    @Autowired
+    private TagMapper tagMapper;
+
+    public List<TagDTO> getAll() {
+        return tagMapper.toListDTO(tagRepository.findAll());
     }
 
-    public Tag create(Tag tag) throws TagException {
+    public TagDTO getById(Integer id) {
+        Optional<Tag> tagFound = tagRepository.findById(id);
+        if(tagFound.isEmpty()){
+            throw new TagException("Tag não encontrada com id: ".concat(id.toString()), "tag.notFound");
+        }
+        return tagMapper.toDTO(tagFound.get());
+    }
+
+    public TagDTO create(TagDTO tag) throws TagException {
         if (verifyIfExists(tag.getDescription())) {
             throw new TagException("Já existe uma tag com essa descrição: ".concat(tag.getDescription()), "tag.exists");
         }
 
-        return tagRepository.save(tag);
+        return tagMapper.toDTO(tagRepository.save(tagMapper.toModel(tag)));
     }
 
-    public void createAll(List<Tag> tagList) {
+    public void createAll(List<TagDTO> tagList) {
         boolean exists = false;
         StringBuilder tagsExistent = new StringBuilder();
-        for(Tag tag : tagList){
+        for (TagDTO tag : tagList) {
             if (verifyIfExists(tag.getDescription())) {
                 tagsExistent.append(tag.getDescription()).append(", ");
                 exists = true;
             }
         }
-        tagsExistent.deleteCharAt(tagsExistent.length()-2);
         if (exists) {
+            tagsExistent.deleteCharAt(tagsExistent.length() - 2);
             throw new TagException("Essas tags já existem: ".concat(tagsExistent.toString().trim()), "tag.exists");
         }
-        tagRepository.saveAllAndFlush(tagList);
+        tagRepository.saveAllAndFlush(tagMapper.toListModel(tagList));
     }
 
     public void deleteById(Integer tagId) {
