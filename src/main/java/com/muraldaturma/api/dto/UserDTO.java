@@ -9,6 +9,7 @@ import com.muraldaturma.api.utils.Role;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,10 +21,18 @@ import java.util.Set;
 public class UserDTO {
 
     private Long id;
+    @NotBlank
     private String username;
+
+    @NotBlank
     private String firstName;
+
+    @NotBlank
     private String lastName;
+
+    @NotBlank
     private String email;
+
     private String avatar;
 //    private Boolean locked = false;
 //    private Boolean enabled = false;

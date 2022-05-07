@@ -32,12 +32,12 @@ public class TagService {
         return tagMapper.toDTO(tagFound.get());
     }
 
-    public TagDTO create(TagDTO tag) throws TagException {
-        if (verifyIfExists(tag.getDescription())) {
-            throw new TagException("Já existe uma tag com essa descrição: ".concat(tag.getDescription()), "tag.exists");
+    public TagDTO create(TagDTO tagDTO) throws TagException {
+        if (verifyIfExists(tagDTO.getDescription())) {
+            throw new TagException("Já existe uma tag com essa descrição: ".concat(tagDTO.getDescription()), "tag.exists");
         }
 
-        return tagMapper.toDTO(tagRepository.save(tagMapper.toModel(tag)));
+        return tagMapper.toDTO(tagRepository.save(tagMapper.toModel(tagDTO)));
     }
 
     public void createAll(List<TagDTO> tagList) {
