@@ -88,6 +88,16 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    @ExceptionHandler({PostNotFoundException.class})
+    protected ResponseEntity<Object> handlePostException(RuntimeException ex,
+                                                         WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
     @ExceptionHandler({ClassNotFoundException.class})
     protected ResponseEntity<Object> handleClassException(RuntimeException ex,
                                                           WebRequest request) {

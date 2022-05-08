@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -35,20 +34,17 @@ public class PostController {
 //        return postService.getAll();
 //    }
 
-    @GetMapping(value = "/{postId}")
-    public ResponseEntity<PostDTO> getById(@PathVariable Long postId) {
-        Optional<PostDTO> post = postService.getDTOById(postId);
-        if (post.isPresent()) {
-            return ResponseEntity.status(HttpStatus.OK).body(post.get());
-        }
-
-        return ResponseEntity.notFound().build();
-    }
-
     @GetMapping
     public ResponseEntity<?> getAllPageable(Pageable pageable, @RequestParam("classId") Long classId) {
-            Page<PostDTO> postListPageable = postService.getAllByClassPageable(pageable, classId);
-            return ResponseEntity.status(HttpStatus.OK).body(postListPageable);
+        Page<PostDTO> postListPageable = postService.getAllByClassPageable(pageable, classId);
+        return ResponseEntity.status(HttpStatus.OK).body(postListPageable);
+    }
+
+    @GetMapping(value = "/{postId}")
+    public ResponseEntity<PostDTO> getById(@PathVariable Long postId) {
+        PostDTO postDTO = postService.getDTOById(postId);
+        return ResponseEntity.status(HttpStatus.OK).body(postDTO);
+
     }
 
     @GetMapping("/userId={userId}")

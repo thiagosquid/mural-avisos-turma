@@ -4,6 +4,7 @@ import com.muraldaturma.api.dto.PostDTO;
 import com.muraldaturma.api.dto.mapper.ClassMapper;
 import com.muraldaturma.api.dto.mapper.PostMapper;
 import com.muraldaturma.api.exception.ClassNotFoundException;
+import com.muraldaturma.api.exception.PostNotFoundException;
 import com.muraldaturma.api.exception.UserNotFoundException;
 import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.User;
@@ -44,9 +45,12 @@ public class PostService {
         return postMapper.toListDTO(postRepository.findAll());
     }
 
-    public Optional<PostDTO> getDTOById(Long id){
-
-        return postRepository.findById(id).map(postMapper::toDTO);
+    public PostDTO getDTOById(Long id){
+        Optional<Post> postFound = postRepository.findById(id);
+        if (postFound.isPresent()) {
+            return postMapper.toDTO(postFound.get());
+        }
+        throw new PostNotFoundException(String.format("Postagem com o id %d não foi encontrada", id),"post.notFound");
     }
 
     public Optional<Post> getModelById(Long id){
