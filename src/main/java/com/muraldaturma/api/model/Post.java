@@ -47,7 +47,7 @@ public class Post {
     @JoinColumn(name = "class_id", nullable = false)
     private Class aClass;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Comment> commentList = new ArrayList<>();
 
