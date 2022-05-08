@@ -1,5 +1,6 @@
 package com.muraldaturma.api.repository;
 
+import com.muraldaturma.api.dto.PostDTO;
 import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.model.Post;

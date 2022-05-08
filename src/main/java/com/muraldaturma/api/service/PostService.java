@@ -40,22 +40,27 @@ public class PostService {
     @Autowired
     private ClassMapper classMapper;
 
-    public List<Post> getAll(){
-        return postRepository.findAll();
+    public List<PostDTO> getAll(){
+        return postMapper.toListDTO(postRepository.findAll());
     }
 
-    public Optional<Post> getById(Long id){
+    public Optional<PostDTO> getDTOById(Long id){
+
+        return postRepository.findById(id).map(postMapper::toDTO);
+    }
+
+    public Optional<Post> getModelById(Long id){
 
         return postRepository.findById(id);
     }
 
-    public List<Post> getByUser(Long id) throws UserNotFoundException {
+    public List<PostDTO> getByUser(Long id) throws UserNotFoundException {
         Optional<User> user = userService.findById(id);
 
-        if(user != null){
-            return postRepository.findByUser(user.get());
+        if(user.isPresent()){
+            return postMapper.toListDTO(postRepository.findByUser(user.get()));
         }
-        return new ArrayList<Post>();
+        return new ArrayList<PostDTO>();
     }
 
     public PostDTO insert(PostDTO postDTO, Long userId, Long classId){
@@ -71,10 +76,10 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    public Page<Post> getAllByClassPageable(Pageable pageable, Long classId) throws ClassNotFoundException {
+    public Page<PostDTO> getAllByClassPageable(Pageable pageable, Long classId) {
         Class classToFilter = classRepository.findById(classId)
                 .orElseThrow(() -> new ClassNotFoundException(String.format("Não foi encontrada classe com o id:  %d",classId),"class.notFound"));
 
-        return postRepository.findByaClass(classToFilter, pageable);
+        return postRepository.findByaClass(classToFilter, pageable).map(postMapper::toDTO);
     }
 }

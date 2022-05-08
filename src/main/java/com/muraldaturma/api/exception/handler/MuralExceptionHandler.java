@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +95,16 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
         log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({SQLException.class})
+    protected ResponseEntity<Object> handleSqlException(RuntimeException ex,
+                                                          WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getMessage());
         return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 

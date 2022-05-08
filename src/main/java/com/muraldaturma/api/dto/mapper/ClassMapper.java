@@ -22,4 +22,5 @@ public interface ClassMapper {
 
     List<Class> toListModel(List<ClassDTO> dtoList);
 
+    Class map(String value);
 }

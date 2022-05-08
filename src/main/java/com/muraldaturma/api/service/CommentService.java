@@ -1,10 +1,10 @@
 package com.muraldaturma.api.service;
 
 import com.muraldaturma.api.exception.UserNotFoundException;
-import com.muraldaturma.api.model.User;
-import com.muraldaturma.api.repository.CommentRepository;
 import com.muraldaturma.api.model.Comment;
 import com.muraldaturma.api.model.Post;
+import com.muraldaturma.api.model.User;
+import com.muraldaturma.api.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +23,10 @@ public class CommentService {
     private UserService userService;
 
     public Comment makeComment(Long postId, Long userId, Comment comment) throws UserNotFoundException {
-        Optional<Post> post = postService.getById(postId);
+        Optional<Post> post = postService.getModelById(postId);
         Optional<User> user = userService.findById(userId);
 
-        if(post.isPresent() && user.isPresent()){
+        if (post.isPresent() && user.isPresent()) {
             comment.setPost(post.get());
             comment.setUser(user.get());
             return commentRepository.save(comment);
@@ -34,7 +34,7 @@ public class CommentService {
         return new Comment();
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         commentRepository.deleteById(id);
     }
 }

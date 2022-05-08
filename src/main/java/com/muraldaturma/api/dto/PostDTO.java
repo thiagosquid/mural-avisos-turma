@@ -1,7 +1,9 @@
 package com.muraldaturma.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.muraldaturma.api.model.Class;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostDTO {
 
@@ -35,9 +38,10 @@ public class PostDTO {
 //    @JsonIgnoreProperties(value = "postList")
     private UserDTO user;
 
-    private ClassDTO aClass;
+    @JsonProperty(value = "class")
+    private String aClass;
 
-//    private List<Comment> commentList = new ArrayList<>();
+    private Integer comments;
 //
 //    private List<User> usersFavorited = new ArrayList<>();
 }
