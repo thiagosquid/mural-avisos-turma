@@ -50,9 +50,7 @@ public class PostController {
     @GetMapping("/userId={userId}")
     public List<PostDTO> getByUser(@PathVariable Long userId) throws UserNotFoundException {
 
-        List<PostDTO> postListDTO = postService.getByUser(userId);
-
-        return postListDTO;
+        return postService.getByUser(userId);
     }
 
     @PostMapping

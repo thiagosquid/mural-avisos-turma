@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -62,7 +63,9 @@ public class PostService {
         Optional<User> user = userService.findById(id);
 
         if(user.isPresent()){
-            return postMapper.toListDTO(postRepository.findByUser(user.get()));
+            List<Post> postList = postRepository.findByUser(user.get());
+            List<PostDTO> postListDTO = new ArrayList<>(postList.stream().map(postMapper::toDTO).collect(Collectors.toList()));
+            return postListDTO;
         }
         return new ArrayList<PostDTO>();
     }

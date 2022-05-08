@@ -5,7 +5,6 @@ import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.Post;
 import org.mapstruct.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Named("PostMapper")
@@ -30,8 +29,13 @@ public interface PostMapper {
 //    })
     PostDTO toDTOWithoutTag(Post model);
 
-//    HashSet<Post> toModel(HashSet<PostDTO> dtoSet);
-
+    //    HashSet<Post> toModel(HashSet<PostDTO> dtoSet);
+    @Mappings({
+            @Mapping(target = "comments",
+                    expression = "java(model.getCommentList().size())"),
+            @Mapping(target = "aClass",
+                    expression = "java(model.getAClass().toString())")
+    })
     List<PostDTO> toListDTO(List<Post> modelList);
 
     Class map(String value);
