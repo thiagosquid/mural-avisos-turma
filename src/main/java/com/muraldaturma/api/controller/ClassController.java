@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/class")
+@RequestMapping("/class")
 @Slf4j
 public class ClassController {
 

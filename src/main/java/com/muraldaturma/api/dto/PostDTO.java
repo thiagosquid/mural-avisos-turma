@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -18,24 +19,20 @@ public class PostDTO {
 
     private Long id;
 
-    @NotNull
+    @NotBlank
     private String title;
 
-    @NotNull
+    @NotBlank
     private String content;
 
-    @NotNull
     private LocalDateTime deadline;
 
-    @NotNull
     private LocalDateTime createdAt;
 
     @NotNull
-//    @JsonIgnoreProperties(value = "postList")
     private TagDTO tag;
 
     @NotNull
-//    @JsonIgnoreProperties(value = "postList")
     private UserDTO user;
 
     @JsonProperty(value = "class")

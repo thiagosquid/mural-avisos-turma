@@ -8,6 +8,7 @@ import com.muraldaturma.api.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -46,21 +47,31 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
             user = new ObjectMapper()
                     .readValue(request.getInputStream(), User.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            Map<String, String> res = new HashMap<>();
+            res.put("message", "Usuário e senha não podem estar vazios");
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setContentType("application/json");
+            try {
+                new ObjectMapper().writeValue(response.getOutputStream(), res);
+            } catch (IOException ex) {
+                log.warn(ex.getMessage());
+            }
+            return null;
         }
 
         Collection<SimpleGrantedAuthority> authority = new ArrayList<>();
-        authority.add(new SimpleGrantedAuthority(user.getRole().toString()));
+        authority.add(new SimpleGrantedAuthority(user != null ? user.getRole().toString() : "USER"));
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(),
-                user.getPassword(),
+                user != null ? user.getUsername() : "",
+                user != null ? user.getPassword() : "",
                 authority
         );
 
         try {
             return authenticationManager.authenticate(authentication);
-        } catch (Exception e) {
+        } catch (BadCredentialsException e) {
             log.warn(e.getMessage());
             Map<String, String> res = new HashMap<>();
             res.put("message", "Usuário ou senha incorretos");

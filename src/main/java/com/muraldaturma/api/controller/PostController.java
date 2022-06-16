@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@RequestMapping(value = "/api/v1/post")
+@RequestMapping(value = "/post")
 public class PostController {
 
     @Autowired
@@ -35,7 +36,7 @@ public class PostController {
 //    }
 
     @GetMapping
-    public ResponseEntity<?> getAllPageable(Pageable pageable, @RequestParam("classId") Long classId) {
+    public ResponseEntity<Page<PostDTO>> getAllPageable(@RequestParam("classId") Long classId, Pageable pageable) {
         Page<PostDTO> postListPageable = postService.getAllByClassPageable(pageable, classId);
         return ResponseEntity.status(HttpStatus.OK).body(postListPageable);
     }
@@ -47,10 +48,14 @@ public class PostController {
 
     }
 
-    @GetMapping("/userId={userId}")
-    public List<PostDTO> getByUser(@PathVariable Long userId) throws UserNotFoundException {
-
-        return postService.getByUser(userId);
+    @GetMapping("/a")
+    public ResponseEntity<Page<PostDTO>>  getByUser(@RequestParam Long userId,
+                                                    @RequestParam Long classId,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "10") int size) throws UserNotFoundException {
+        Pageable pageable = PageRequest.of(page, size);
+        return  ResponseEntity.ok().body(postService.getAllPageable(pageable, userId, classId));
+//        return postService.getByUser(userId);
     }
 
     @PostMapping

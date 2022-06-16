@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/v1/tag")
+@RequestMapping(value = "/tag")
 @Slf4j
 public class TagController {
 

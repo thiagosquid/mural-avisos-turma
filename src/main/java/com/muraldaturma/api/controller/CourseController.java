@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/course")
+@RequestMapping("/course")
 @Slf4j
 public class CourseController {
 

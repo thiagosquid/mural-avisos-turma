@@ -33,7 +33,7 @@ import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWOR
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/user")
+@RequestMapping(value = "/user")
 public class UserController {
 
     @Autowired
