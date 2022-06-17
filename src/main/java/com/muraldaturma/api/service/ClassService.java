@@ -2,6 +2,7 @@ package com.muraldaturma.api.service;
 
 import com.muraldaturma.api.dto.ClassDTO;
 import com.muraldaturma.api.dto.mapper.ClassMapper;
+import com.muraldaturma.api.dto.mapper.ClassMapperImpl;
 import com.muraldaturma.api.exception.ClassNotFoundException;
 import com.muraldaturma.api.exception.UserNotFoundException;
 import com.muraldaturma.api.exception.UsernameAlreadyExistsException;
@@ -24,8 +25,7 @@ public class ClassService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ClassMapper classMapper;
+    private final ClassMapper classMapper = new ClassMapperImpl();
 
     public List<ClassDTO> getAll() {
         return classMapper.toListDTO(classRepository.findAll());
@@ -41,7 +41,8 @@ public class ClassService {
 
     public ClassDTO create(ClassDTO classToCreateDTO) {
         Class classToCreate = classMapper.toModel(classToCreateDTO);
-        return classMapper.toDTO(classRepository.save(classToCreate));
+        Class classSaved = classRepository.save(classToCreate);
+        return classMapper.toDTO(classSaved);
     }
 
     public void addStudentAtClass(Long classId, String username) {
@@ -56,7 +57,7 @@ public class ClassService {
             userRepository.save(user.get());
         } else if (user.isEmpty()) {
             throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username:  %s", username), "user.notFound");
-        } else if (classToUpdate.isEmpty()) {
+        } else {
             throw new ClassNotFoundException(String.format("Não foi encontrada  turma com esse id: %d", classId), "class.notFound");
         }
 

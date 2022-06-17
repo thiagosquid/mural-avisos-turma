@@ -43,13 +43,13 @@ public class Class {
     private Set<Post> postsList = new HashSet<>();
 
     //TODO Passar isso para um DTO
-    @Override
+//    @Override
 //    @JsonProperty(value = "code")
-    public String toString() {
-        String courseReturn = course.getAcronym()
-                .concat(year.toString())
-                .concat(semester.toString());
-
-        return courseReturn;
-    }
+//    public String toString() {
+//        String courseReturn = course.getAcronym()
+//                .concat(year.toString())
+//                .concat(semester.toString());
+//
+//        return courseReturn;
+//    }
 }
