@@ -29,18 +29,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
 
 @Slf4j
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
 
-    @Autowired
-    private UserMapper userMapper; //TODO passar mapper para a service e implementar exception handler nessa classe
-
     private final UserService userService;
     private final PasswordEncoder encoder;
+    @Autowired
+    private UserMapper userMapper; //TODO passar mapper para a service e implementar exception handler nessa classe
 
     public UserController(UserService userService, PasswordEncoder encoder) {
         this.userService = userService;

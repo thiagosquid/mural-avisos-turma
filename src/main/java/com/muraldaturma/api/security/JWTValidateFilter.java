@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
+
 @Slf4j
 public class JWTValidateFilter extends BasicAuthenticationFilter {
 
@@ -78,7 +80,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
         DecodedJWT decodedJWT = null;
         try {
-            decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
+            decodedJWT = JWT.require(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL))
                     .build()
                     .verify(token);
         } catch (JWTVerificationException | IllegalArgumentException e) {

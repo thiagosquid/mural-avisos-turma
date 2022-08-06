@@ -1,7 +1,6 @@
 package com.muraldaturma.api.service;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -12,7 +11,6 @@ import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.model.ConfirmationToken;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.UserRepository;
-import com.muraldaturma.api.security.JWTAutenticationFilter;
 import com.muraldaturma.api.utils.Mail;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +21,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
 import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
-import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
 
 @Service
 @AllArgsConstructor
@@ -45,7 +43,7 @@ public class UserService {
         if (user.isPresent()) {
             return user;
         } else {
-            throw new UserNotFoundException(String.format("Nao foi encontrado usuario com o id: ",id),"user.notFound");
+            throw new UserNotFoundException(String.format("Nao foi encontrado usuario com o id: ", id), "user.notFound");
         }
     }
 
@@ -96,7 +94,7 @@ public class UserService {
             if (ct.isPresent() && existsEmail && LocalDateTime.now().isBefore(ct.get().getExpiresAt())) {
                 throw new EmailAlreadyExistsException();
             } else if (existsUsername) {
-                throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", user.getUsername()),"user.alreadyExist");
+                throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", user.getUsername()), "user.alreadyExist");
             }
 
             User userSaved = userRepository.save(user);
@@ -251,11 +249,11 @@ public class UserService {
             String refreshToken = authorizationHeader.substring("Bearer ".length());
             DecodedJWT decodedJWT = null;
             try {
-                decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
+                decodedJWT = JWT.require(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL))
                         .build()
                         .verify(refreshToken);
             } catch (JWTVerificationException | IllegalArgumentException e) {
-                throw new JWTVerificationException(e.getMessage(), new Throwable("refreshToken.expired",null));
+                throw new JWTVerificationException(e.getMessage(), new Throwable("refreshToken.expired", null));
             }
             Long id = Long.parseLong(decodedJWT.getClaim("userId").toString());
             User user = this.findById(id).get();
@@ -291,11 +289,11 @@ public class UserService {
 
     private User verifyIfExists(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o id: ",id),"user.notFound"));
+                .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o id: ", id), "user.notFound"));
     }
 
     private User verifyIfExists(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o username: ",username),"user.notFound"));
+                .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o username: ", username), "user.notFound"));
     }
 }

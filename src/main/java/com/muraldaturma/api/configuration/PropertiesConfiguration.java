@@ -9,6 +9,7 @@ public class PropertiesConfiguration {
     public static String PROFILE_ACTIVE;
     public static String API_BASE_URL;
     public static String FRONT_BASE_URL;
+    public static String TOKEN_PASSWORD_MURAL;
 
 
     @Value("${spring.profiles.active}")
@@ -24,5 +25,10 @@ public class PropertiesConfiguration {
     @Value("${front.base.url}")
     public void setFrontBaseUrl(String frontBaseUrl) {
         PropertiesConfiguration.FRONT_BASE_URL = frontBaseUrl;
+    }
+
+    @Value("${api.key}")
+    public void setTokenPasswordMural(String tokenPasswordMural) {
+        PropertiesConfiguration.TOKEN_PASSWORD_MURAL = tokenPasswordMural;
     }
 }
