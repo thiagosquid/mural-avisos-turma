@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muraldaturma.api.data.UserDetailData;
 import com.muraldaturma.api.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,13 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
+
 @Slf4j
 public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     public static final int TOKEN_EXPIRATION = 10 * 60 * 1000;
-
-    public static String TOKEN_PASSWORD_MURAL = System.getenv("TOKEN_PASSWORD_MURAL");
-
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
