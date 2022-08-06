@@ -54,7 +54,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
-        Optional<User> user = null;
+        Optional<User> user;
         try {
             user = userService.findById(id);
         } catch (UserNotFoundException e) {

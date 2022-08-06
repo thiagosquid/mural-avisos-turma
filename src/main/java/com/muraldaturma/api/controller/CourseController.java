@@ -2,8 +2,6 @@ package com.muraldaturma.api.controller;
 
 import com.muraldaturma.api.dto.CourseDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
-import com.muraldaturma.api.exception.CourseNotFoundException;
-import com.muraldaturma.api.model.Course;
 import com.muraldaturma.api.service.CourseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +33,10 @@ public class CourseController {
 
     @GetMapping("{id}")
     public ResponseEntity<CourseDTO> getById(@PathVariable Integer id) {
-//        try {
+
         CourseDTO courseDTO = courseService.getById(id);
         return ResponseEntity.status(HttpStatus.FOUND).body(courseDTO);
-//        } catch (CourseNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
+
     }
 
     @PostMapping
@@ -56,24 +52,17 @@ public class CourseController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteById(@PathVariable Integer id) {
-//        try {
-            courseService.deleteById(id);
-            log.info("Curso com ID {} deletado com sucesso", id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                    .body(new HashMap<String, String>().put("message", "Curso deletado com sucesso"));
-//        } catch (CourseNotFoundException e) {
-//            log.error(e.getMessage());
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
+        courseService.deleteById(id);
+        log.info("Curso com ID {} deletado com sucesso", id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .body(new HashMap<String, String>().put("message", "Curso deletado com sucesso"));
     }
 
     @PutMapping("{id}")
     public ResponseEntity<CourseDTO> update(@PathVariable Integer id, @RequestBody CourseDTO courseDTO) {
-//        try {
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(courseService.update(id, courseDTO));
-//        } catch (CourseNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(courseService.update(id, courseDTO));
+
     }
 
 }
