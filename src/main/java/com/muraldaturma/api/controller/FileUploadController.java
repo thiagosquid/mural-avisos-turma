@@ -10,7 +10,7 @@ import javax.validation.constraints.NotBlank;
 @RestController
 @RequestMapping("/api/v1/file")
 public class FileUploadController {
-
+//Teste
     Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
             "cloud_name", "hccttzbso",
             "api_key", "424215662562113",
