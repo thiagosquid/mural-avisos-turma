@@ -8,7 +8,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 @RestController
-@RequestMapping("/api/v1/file")
+@RequestMapping("/file")
 public class FileUploadController {
 
     Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
