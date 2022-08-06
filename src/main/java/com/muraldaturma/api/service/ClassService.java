@@ -9,6 +9,7 @@ import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.ClassRepository;
 import com.muraldaturma.api.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ClassService {
 
     @Autowired
@@ -48,12 +50,23 @@ public class ClassService {
         Optional<Class> classToUpdate = classRepository.findById(classId);
         Optional<User> user = userRepository.findByUsername(username);
 
+        log.info("===============LINHA 53=========================");
+        log.info(user.get().toString());
+        log.info(classToUpdate.get().toString());
+        log.info("===============LINHA 56=========================");
+
+
         if (user.isPresent() && classToUpdate.isPresent()) {
+            log.info("===============LINHA 60=========================");
+
             if (user.get().getClassList().contains(classToUpdate.get())) {
                 throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", username), "user.alreadyExist");
             }
+            log.info("===============LINHA 65=========================");
             user.get().getClassList().add(classToUpdate.get());
             userRepository.save(user.get());
+            log.info("===============LINHA 68=========================");
+
         } else if (user.isEmpty()) {
             throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username:  %s", username), "user.notFound");
         } else if (classToUpdate.isEmpty()) {
