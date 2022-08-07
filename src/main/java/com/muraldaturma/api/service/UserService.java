@@ -121,14 +121,15 @@ public class UserService {
         }
     }
 
-    public User update(User user) throws UserNotFoundException {
+    public void update(User user) throws UserNotFoundException {
         User byId = verifyIfExists(user.getId());
         User byUsername = verifyIfExists(user.getUsername());
 
         if (byId.getId().equals(byUsername.getId())) {
-            return userRepository.save(user);
+            userRepository.save(user);
+            return;
         }
-        return new User();
+        new User();
     }
 
     public String confirmToken(String token) throws UserNotFoundException, TokenException, MessagingException, IOException {

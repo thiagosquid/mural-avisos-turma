@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,25 +47,20 @@ public class ClassService {
         return classMapper.toDTO(classRepository.save(classToCreate));
     }
 
+    @Transactional
     public void addStudentAtClass(Long classId, String username) {
         Optional<Class> classToUpdate = classRepository.findById(classId);
         Optional<User> userOptional = userRepository.findByUsername(username);
 
-        log.info("===============LINHA 53=========================");
-        log.info(userOptional.get().toString());
-        log.info(classToUpdate.get().toString());
-        log.info("===============LINHA 56=========================");
-
 
         if (userOptional.isPresent() && classToUpdate.isPresent()) {
-            log.info("===============LINHA 60=========================");
-            User user = userOptional.get();
-            if (user.getClassList().contains(classToUpdate.get())) {
+            List<Class> classList = userOptional.get().getClassList();
+            if (classList.contains(classToUpdate.get())) {
                 throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", username), "user.alreadyExist");
             }
             log.info("===============LINHA 65=========================");
-            user.getClassList().add(classToUpdate.get());
-            userRepository.save(user);
+            userOptional.get().setClassList(classList);
+            User userSaved = userRepository.save(userOptional.get());
             log.info("===============LINHA 68=========================");
 
         } else if (userOptional.isEmpty()) {
