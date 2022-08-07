@@ -131,7 +131,7 @@ public class UserController {
             String res = userService.changePassword(passwordRecoveryDto);
             return ResponseEntity.status(HttpStatus.OK).body(res);
         } catch (UserNotFoundException | TokenException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e);
         }
     }
 
