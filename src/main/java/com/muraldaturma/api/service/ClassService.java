@@ -48,26 +48,26 @@ public class ClassService {
 
     public void addStudentAtClass(Long classId, String username) {
         Optional<Class> classToUpdate = classRepository.findById(classId);
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<User> userOptional = userRepository.findByUsername(username);
 
         log.info("===============LINHA 53=========================");
-        log.info(user.get().toString());
+        log.info(userOptional.get().toString());
         log.info(classToUpdate.get().toString());
         log.info("===============LINHA 56=========================");
 
 
-        if (user.isPresent() && classToUpdate.isPresent()) {
+        if (userOptional.isPresent() && classToUpdate.isPresent()) {
             log.info("===============LINHA 60=========================");
-
-            if (user.get().getClassList().contains(classToUpdate.get())) {
+            User user = userOptional.get();
+            if (user.getClassList().contains(classToUpdate.get())) {
                 throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", username), "user.alreadyExist");
             }
             log.info("===============LINHA 65=========================");
-            user.get().getClassList().add(classToUpdate.get());
-            userRepository.save(user.get());
+            user.getClassList().add(classToUpdate.get());
+            userRepository.save(user);
             log.info("===============LINHA 68=========================");
 
-        } else if (user.isEmpty()) {
+        } else if (userOptional.isEmpty()) {
             throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username:  %s", username), "user.notFound");
         } else if (classToUpdate.isEmpty()) {
             throw new ClassNotFoundException(String.format("Não foi encontrada  turma com esse id: %d", classId), "class.notFound");
