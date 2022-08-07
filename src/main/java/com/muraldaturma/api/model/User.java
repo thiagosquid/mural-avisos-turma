@@ -64,7 +64,7 @@ public class User {
     @ToString.Exclude
     private List<Post> postsList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    @OneToMany( mappedBy = "user", orphanRemoval = true)
     @JsonIgnore
     @ToString.Exclude
     private List<ConfirmationToken> tokenList = new ArrayList<>();
