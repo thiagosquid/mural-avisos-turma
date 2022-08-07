@@ -25,7 +25,7 @@ public class ClassService {
     private ClassRepository classRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
     private ClassMapper classMapper;
@@ -50,7 +50,7 @@ public class ClassService {
     @Transactional
     public void addStudentAtClass(Long classId, String username) {
         Optional<Class> classToUpdate = classRepository.findById(classId);
-        Optional<User> userOptional = userRepository.findByUsername(username);
+        Optional<User> userOptional = userService.findByUsername(username);
 
 
         if (userOptional.isPresent() && classToUpdate.isPresent()) {
@@ -58,10 +58,8 @@ public class ClassService {
             if (classList.contains(classToUpdate.get())) {
                 throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", username), "user.alreadyExist");
             }
-            log.info("===============LINHA 65=========================");
             userOptional.get().setClassList(classList);
-            User userSaved = userRepository.save(userOptional.get());
-            log.info("===============LINHA 68=========================");
+            userService.update(userOptional.get());
 
         } else if (userOptional.isEmpty()) {
             throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username:  %s", username), "user.notFound");
