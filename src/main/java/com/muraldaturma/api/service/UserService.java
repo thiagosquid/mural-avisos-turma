@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -49,36 +50,7 @@ public class UserService {
 
     public void save(User user) throws UserInvalidEmailException, UsernameAlreadyExistsException,
             EmailAlreadyExistsException, MessagingException, IOException, FirstNameInvalidException, LastNameInvalidException {
-        /* Removida a verificação se email e nomes coincidem, deixando apenas a verificação se o email é do dominio do IFS
-        Collator collator = Collator.getInstance(Locale.forLanguageTag("pt_BR"));
-        collator.setStrength(Collator.PRIMARY);
 
-        //Procedimento para extrair do email o primeiro nome, ultimo nome e verificar se possui os numeros antes do @
-        String[] email = user.getEmail().split("[.,@]");
-        String emailFirstName = email[0];
-        int tam = email[1].length();
-        String emailLastName = email[1].substring(0, tam - 3);
-
-        int tamLastName = user.getLastName().split(" ").length;
-        //verifica se o primeiro nome é igual ao primeiro nome do email
-        boolean sameFirstName = collator.compare(emailFirstName, user.getFirstName()) == 0;
-        //verifica se o ultimo nome é igual ao ultimo nome do email
-        boolean sameLastName = collator.compare(emailLastName, user.getLastName().split(" ")[tamLastName - 1]) == 0;
-        boolean isNumber = false;
-        //verifica se os 3 digitos antes da @ são números
-        try {
-            isNumber = Integer.parseInt(email[1].substring(tam - 3, tam)) >= 0;
-        } catch (Exception e) {
-            throw new UserInvalidEmailException("Email com 3 dígitos inválidos");
-        }
-
-        if (!sameFirstName) {
-            throw new FirstNameInvalidException();
-        }
-        if (!sameLastName) {
-            throw new LastNameInvalidException();
-        }
-        */
         if (user.getEmail().contains(EMAIL_DOMAIN)) {
             user.setUsername(user.getUsername());
             user.setEmail(user.getEmail().toLowerCase());
@@ -220,6 +192,7 @@ public class UserService {
         return "Um link para alterar a senha foi enviado para o seu email";
     }
 
+    @Transactional
     public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException, TokenException {
         User user = userRepository.getById(passwordRecoveryDto.getId());
 
@@ -296,5 +269,10 @@ public class UserService {
     private User verifyIfExists(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(String.format("Nao foi encontrado usuario com o username: ", username), "user.notFound"));
+    }
+
+    public Optional<User> findByUsername(String username) {
+
+        return userRepository.findByUsername(username);
     }
 }
