@@ -127,12 +127,9 @@ public class UserController {
     @PostMapping("/recovery")
     public ResponseEntity<?> recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
-        try {
-            String res = userService.changePassword(passwordRecoveryDto);
-            return ResponseEntity.status(HttpStatus.OK).body(res);
-        } catch (UserNotFoundException | TokenException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e);
-        }
+        String res = userService.changePassword(passwordRecoveryDto);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+
     }
 
     @PostMapping("/refreshtoken")
