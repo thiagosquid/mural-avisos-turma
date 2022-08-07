@@ -108,7 +108,7 @@ public class UserService {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->
-                        new TokenException("Token não encontrado."));
+                        new TokenException("Token não encontrado.", "error.token"));
 
         if (confirmationToken.getConfirmedAt() != null) {
             return "<h1 style=\"color=red; weight=bold; margin: auto\">Sua Conta já foi verificada</h1>" +
@@ -132,7 +132,7 @@ public class UserService {
             } else {
                 System.out.println(link);
             }
-            throw new TokenException("Solicitação expirada. Você receberá novo email de confirmação");
+            throw new TokenException("Solicitação expirada. Você receberá novo email de confirmação", "error.token");
         }
 
         confirmationTokenService.setConfirmedAt(confirmationToken);
@@ -199,13 +199,13 @@ public class UserService {
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(passwordRecoveryDto.getToken()).get();
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new TokenException("Esta solicitação de renovação de senha está expirada. Para alterá-la, solicite novamente!");
+            throw new TokenException("Esta solicitação de renovação de senha está expirada. Para alterá-la, solicite novamente!", "error.token");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new TokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!");
+            throw new TokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!", "error.token");
         }
 
         confirmationTokenService.setConfirmedAt(confirmationToken);
@@ -234,7 +234,7 @@ public class UserService {
             String tokenId = decodedJWT.getId();
 
             if (tokenId == null || !tokenId.equals("1")) {
-                throw new TokenException("Esse não é um refresh token");
+                throw new TokenException("Esse não é um refresh token", "error.token");
             }
             String accessToken = JWT.create()
                     .withSubject(user.getUsername())
