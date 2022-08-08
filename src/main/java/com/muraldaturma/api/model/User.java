@@ -79,7 +79,7 @@ public class User {
                             nullable = false, updatable = false)})
     @ToString.Exclude
     @JsonIgnore
-    private List<Post> favoritesPosts = new ArrayList<>();
+    private Set<Post> favoritesPosts = new HashSet<>();
 
     @OrderBy
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -103,6 +103,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return Objects.hash(id, username, firstName, lastName, email, role, avatar);
     }
 }

@@ -2,16 +2,14 @@ package com.muraldaturma.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -51,5 +49,27 @@ public class Class {
                 .concat(semester.toString());
 
         return courseReturn;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Class aClass = (Class) o;
+
+        if (!id.equals(aClass.id)) return false;
+        if (!year.equals(aClass.year)) return false;
+        if (!semester.equals(aClass.semester)) return false;
+        return course.equals(aClass.course);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + year.hashCode();
+        result = 31 * result + semester.hashCode();
+        result = 31 * result + course.hashCode();
+        return result;
     }
 }

@@ -52,7 +52,7 @@ public class PostController {
     public ResponseEntity<Page<PostDTO>>  getByUser(@RequestParam Long userId,
                                                     @RequestParam Long classId,
                                                     @RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "10") int size) throws UserNotFoundException {
+                                                    @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return  ResponseEntity.ok().body(postService.getAllPageable(pageable, userId, classId));
 //        return postService.getByUser(userId);
@@ -69,6 +69,13 @@ public class PostController {
         log.info("Criado Post com ID \"{}\" pelo usuário \"{}\"", postSavedDTO.getId(), postSavedDTO.getUser().getUsername());
 
         return ResponseEntity.ok(postSavedDTO);
+    }
+
+    @GetMapping("/{postId}/favorite")
+    public ResponseEntity<?> favoritePost(@RequestParam(value = "userId") Long userId
+                                        , @PathVariable(name = "postId") Long postId){
+        postService.favoritePost(postId, userId);
+        return ResponseEntity.ok("");
     }
 
     @DeleteMapping(value = "/{id}")
