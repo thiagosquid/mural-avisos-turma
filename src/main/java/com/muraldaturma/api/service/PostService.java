@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.muraldaturma.api.security.JWTValidateFilter.REQUEST_USER;
+import static com.muraldaturma.api.security.JWTValidateFilter.REQUEST_USER_ID;
 
 @Service
 public class PostService {
@@ -52,14 +52,15 @@ public class PostService {
 
     public PostDTO getDTOById(Long postId) {
         Optional<Post> postFound = postRepository.findById(postId);
+        User user = userService.findById(REQUEST_USER_ID).get();
         if (postFound.isPresent()) {
-            PostDTO postDTO = postMapper.toDTO(postFound.get());
-            if (postFound.get().getUsersFavorited().contains(REQUEST_USER)) {
-                postDTO.setFavorite(true);
+
+            if (postFound.get().getUsersFavorited().contains(user)) {
+                postFound.get().setFavorite(true);
             } else {
-                postDTO.setFavorite(false);
+                postFound.get().setFavorite(false);
             }
-            return postDTO;
+            return postMapper.toDTO(postFound.get());
         }
         throw new PostNotFoundException(String.format("Postagem com o id %d não foi encontrada", postId), "post.notFound");
     }
@@ -98,9 +99,10 @@ public class PostService {
         Class classToFilter = classRepository.findById(classId)
                 .orElseThrow(() -> new ClassNotFoundException(String.format("Não foi encontrada classe com o id:  %d", classId), "class.notFound"));
 
+        User user = userService.findById(REQUEST_USER_ID).get();
         return postRepository.findByaClass(classToFilter, pageable).map(p -> {
             PostDTO postDTO = postMapper.toDTO(p);
-            if (p.getUsersFavorited().contains(REQUEST_USER)) {
+            if (p.getUsersFavorited().contains(user)) {
                 postDTO.setFavorite(true);
             } else {
                 postDTO.setFavorite(false);
@@ -119,12 +121,26 @@ public class PostService {
     }
 
     @Transactional
-    public void favoritePost(Long postId, Long userId) {
+    public PostDTO favoritePost(Long postId, Long userId) {
         User user = userService.findById(userId).get();
         Post post = postRepository.findById(postId).get();
         post.getUsersFavorited().add(user);
         user.getFavoritesPosts().add(post);
         userService.update(user);
-        postRepository.save(post);
+
+        post.setFavorite(true);
+        return postMapper.toDTO(postRepository.save(post));
+    }
+
+    public PostDTO disfavorPost(Long postId, Long userId) {
+
+        User user = userService.findById(userId).get();
+        Post post = postRepository.findById(postId).get();
+        post.getUsersFavorited().remove(user);
+        user.getFavoritesPosts().remove(post);
+        userService.update(user);
+
+        post.setFavorite(false);
+        return postMapper.toDTO(postRepository.save(post));
     }
 }

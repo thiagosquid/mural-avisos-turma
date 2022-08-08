@@ -2,7 +2,6 @@ package com.muraldaturma.api.controller;
 
 import com.muraldaturma.api.dto.PostDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
-import com.muraldaturma.api.exception.UserNotFoundException;
 import com.muraldaturma.api.service.PostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -49,12 +47,12 @@ public class PostController {
     }
 
     @GetMapping("/a")
-    public ResponseEntity<Page<PostDTO>>  getByUser(@RequestParam Long userId,
-                                                    @RequestParam Long classId,
-                                                    @RequestParam(defaultValue = "0") int page,
-                                                    @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<Page<PostDTO>> getByUser(@RequestParam Long userId,
+                                                   @RequestParam Long classId,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return  ResponseEntity.ok().body(postService.getAllPageable(pageable, userId, classId));
+        return ResponseEntity.ok().body(postService.getAllPageable(pageable, userId, classId));
 //        return postService.getByUser(userId);
     }
 
@@ -73,9 +71,20 @@ public class PostController {
 
     @GetMapping("/{postId}/favorite")
     public ResponseEntity<?> favoritePost(@RequestParam(value = "userId") Long userId
-                                        , @PathVariable(name = "postId") Long postId){
-        postService.favoritePost(postId, userId);
-        return ResponseEntity.ok("");
+            , @PathVariable(name = "postId") Long postId) {
+
+        return ResponseEntity.ok(
+                postService.favoritePost(postId, userId)
+        );
+    }
+
+    @GetMapping("/{postId}/disfavor")
+    public ResponseEntity<PostDTO> disfavorPost(@RequestParam(value = "userId") Long userId
+            , @PathVariable(name = "postId") Long postId) {
+
+        return ResponseEntity.ok(
+                postService.disfavorPost(postId, userId)
+        );
     }
 
     @DeleteMapping(value = "/{id}")
