@@ -34,7 +34,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
     public static final String HEADER_ATTRIBUTE = "Authorization";
     public static final String PREFIX_ATTRIBUTE = "Bearer ";
 
-    public static User REQUEST_USER;
+    public static Long REQUEST_USER_ID;
 
     private final UserService userService;
 
@@ -95,8 +95,9 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
         Long userId = decodedJWT.getClaim("userId").asLong();
         Role role = Role.USER;
         try {
-            REQUEST_USER = userService.findById(userId).get();
-            role = REQUEST_USER.getRole();
+            User user = userService.findById(userId).get();
+            REQUEST_USER_ID = user.getId();
+            role = user.getRole();
         } catch (Exception e) {
             log.error(e.getMessage());
         }
