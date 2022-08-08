@@ -19,7 +19,9 @@ public interface PostMapper {
             @Mapping(target = "comments",
                     expression = "java(model.getCommentList().size())"),
             @Mapping(target = "aClass",
-                    expression = "java(model.getAClass().toString())")
+                    expression = "java(model.getAClass().toString())"),
+            @Mapping(target = "favorite",
+                    source = "favorite")
     })
     PostDTO toDTO(Post model);
 

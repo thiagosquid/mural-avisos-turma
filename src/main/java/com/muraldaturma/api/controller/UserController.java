@@ -29,18 +29,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
 
 @Slf4j
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
 
-    @Autowired
-    private UserMapper userMapper; //TODO passar mapper para a service e implementar exception handler nessa classe
-
     private final UserService userService;
     private final PasswordEncoder encoder;
+    @Autowired
+    private UserMapper userMapper; //TODO passar mapper para a service e implementar exception handler nessa classe
 
     public UserController(UserService userService, PasswordEncoder encoder) {
         this.userService = userService;
@@ -54,7 +53,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
-        Optional<User> user = null;
+        Optional<User> user;
         try {
             user = userService.findById(id);
         } catch (UserNotFoundException e) {
@@ -128,12 +127,9 @@ public class UserController {
     @PostMapping("/recovery")
     public ResponseEntity<?> recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
-        try {
-            String res = userService.changePassword(passwordRecoveryDto);
-            return ResponseEntity.status(HttpStatus.OK).body(res);
-        } catch (UserNotFoundException | TokenException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+        String res = userService.changePassword(passwordRecoveryDto);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+
     }
 
     @PostMapping("/refreshtoken")

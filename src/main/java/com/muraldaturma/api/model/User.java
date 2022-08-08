@@ -23,7 +23,7 @@ import java.util.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NotBlank
@@ -64,7 +64,7 @@ public class User {
     @ToString.Exclude
     private List<Post> postsList = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    @OneToMany( mappedBy = "user", orphanRemoval = true)
     @JsonIgnore
     @ToString.Exclude
     private List<ConfirmationToken> tokenList = new ArrayList<>();
@@ -79,7 +79,7 @@ public class User {
                             nullable = false, updatable = false)})
     @ToString.Exclude
     @JsonIgnore
-    private List<Post> favoritesPosts = new ArrayList<>();
+    private Set<Post> favoritesPosts = new HashSet<>();
 
     @OrderBy
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -103,6 +103,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return Objects.hash(id, username, firstName, lastName, email, role, avatar);
     }
 }
