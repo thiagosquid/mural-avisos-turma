@@ -6,6 +6,7 @@ import com.muraldaturma.api.model.Class;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -27,6 +28,7 @@ public class PostDTO {
 
     private LocalDateTime deadline;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @NotNull
@@ -39,6 +41,8 @@ public class PostDTO {
     private String aClass;
 
     private Integer comments;
+
+    private Boolean favorite;
 //
 //    private List<User> usersFavorited = new ArrayList<>();
 }

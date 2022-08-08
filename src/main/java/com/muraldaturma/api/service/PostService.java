@@ -16,11 +16,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.muraldaturma.api.security.JWTValidateFilter.REQUEST_USER;
 
 @Service
 public class PostService {
@@ -47,12 +50,18 @@ public class PostService {
         return postMapper.toListDTO(postRepository.findAll());
     }
 
-    public PostDTO getDTOById(Long id) {
-        Optional<Post> postFound = postRepository.findById(id);
+    public PostDTO getDTOById(Long postId) {
+        Optional<Post> postFound = postRepository.findById(postId);
         if (postFound.isPresent()) {
-            return postMapper.toDTO(postFound.get());
+            PostDTO postDTO = postMapper.toDTO(postFound.get());
+            if (postFound.get().getUsersFavorited().contains(REQUEST_USER)) {
+                postDTO.setFavorite(true);
+            } else {
+                postDTO.setFavorite(false);
+            }
+            return postDTO;
         }
-        throw new PostNotFoundException(String.format("Postagem com o id %d não foi encontrada", id), "post.notFound");
+        throw new PostNotFoundException(String.format("Postagem com o id %d não foi encontrada", postId), "post.notFound");
     }
 
     public Optional<Post> getModelById(Long id) {
@@ -89,7 +98,15 @@ public class PostService {
         Class classToFilter = classRepository.findById(classId)
                 .orElseThrow(() -> new ClassNotFoundException(String.format("Não foi encontrada classe com o id:  %d", classId), "class.notFound"));
 
-        return postRepository.findByaClass(classToFilter, pageable).map(postMapper::toDTO);
+        return postRepository.findByaClass(classToFilter, pageable).map(p -> {
+            PostDTO postDTO = postMapper.toDTO(p);
+            if (p.getUsersFavorited().contains(REQUEST_USER)) {
+                postDTO.setFavorite(true);
+            } else {
+                postDTO.setFavorite(false);
+            }
+            return postDTO;
+        });
     }
 
     public Page<PostDTO> getAllPageable(Pageable pageable, Long userId, Long classId) {
@@ -99,5 +116,15 @@ public class PostService {
         User user = userService.findById(userId).get();
         Class aClass = classMapper.toModel(classService.getById(classId));
         return postRepository.findByaClassAndUser(aClass, user, pageable).map(postMapper::toDTO);
+    }
+
+    @Transactional
+    public void favoritePost(Long postId, Long userId) {
+        User user = userService.findById(userId).get();
+        Post post = postRepository.findById(postId).get();
+        post.getUsersFavorited().add(user);
+        user.getFavoritesPosts().add(post);
+        userService.update(user);
+        postRepository.save(post);
     }
 }
