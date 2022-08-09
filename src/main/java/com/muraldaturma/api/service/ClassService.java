@@ -9,7 +9,6 @@ import com.muraldaturma.api.exception.UsernameAlreadyExistsException;
 import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.ClassRepository;
-import com.muraldaturma.api.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,10 +48,9 @@ public class ClassService {
     }
 
     @Transactional
-    public void addStudentAtClass(Long classId, String username) {
+    public void addStudentToClass(Long classId, String username) {
         Optional<Class> classToUpdate = classRepository.findById(classId);
         Optional<User> userOptional = userService.findByUsername(username);
-
 
         if (userOptional.isPresent() && classToUpdate.isPresent()) {
             List<Class> classList = userOptional.get().getClassList();
@@ -63,7 +61,7 @@ public class ClassService {
             userService.update(userOptional.get());
 
         } else if (userOptional.isEmpty()) {
-            throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username:  %s", username), "user.notFound");
+            throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username: %s", username), "user.notFound");
         } else {
             throw new ClassNotFoundException(String.format("Não foi encontrada  turma com esse id: %d", classId), "class.notFound");
         }

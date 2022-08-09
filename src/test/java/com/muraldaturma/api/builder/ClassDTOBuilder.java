@@ -21,7 +21,7 @@ public class ClassDTOBuilder {
     private Integer semester = 1;
 
     @Builder.Default
-    private CourseDTO course = null;
+    private CourseDTO course = CourseDTOBuilder.builder().build().toClass();
 
     @Builder.Default
     private List<User> users = new ArrayList<>();

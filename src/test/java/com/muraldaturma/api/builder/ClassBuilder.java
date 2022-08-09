@@ -22,13 +22,13 @@ public class ClassBuilder {
     private Integer semester = 1;
 
     @Builder.Default
-    private Course course = null;
+    private Course course = CourseBuilder.builder().build().toClass();
 
     @Builder.Default
     private List<User> users = new ArrayList<>();
 
     public Class toClass(){
-        return new Class(null, year, semester, course, new HashSet<>(), new HashSet<>());
+        return new Class(id, year, semester, course, new HashSet<>(), new HashSet<>());
     }
 
 }
