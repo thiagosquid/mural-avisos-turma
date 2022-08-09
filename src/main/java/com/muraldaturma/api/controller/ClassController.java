@@ -50,7 +50,7 @@ public class ClassController {
     @PostMapping("/{classId}")
     public ResponseEntity<?> addStudentAtClass(@PathVariable("classId") Long classId
             , @RequestParam("username") String username) {
-        classService.addStudentAtClass(classId, username);
+        classService.addStudentToClass(classId, username);
         return ResponseEntity.ok().build();
     }
 

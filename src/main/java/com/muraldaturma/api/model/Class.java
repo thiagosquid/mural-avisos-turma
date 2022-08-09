@@ -58,7 +58,6 @@ public class Class {
 
         Class aClass = (Class) o;
 
-        if (!id.equals(aClass.id)) return false;
         if (!year.equals(aClass.year)) return false;
         if (!semester.equals(aClass.semester)) return false;
         return course.equals(aClass.course);
@@ -66,8 +65,7 @@ public class Class {
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + year.hashCode();
+        int result = year.hashCode();
         result = 31 * result + semester.hashCode();
         result = 31 * result + course.hashCode();
         return result;
