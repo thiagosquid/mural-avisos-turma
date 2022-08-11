@@ -57,6 +57,7 @@ public class ClassService {
             if (classList.contains(classToUpdate.get())) {
                 throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", username), "user.alreadyExist");
             }
+            classList.add(classToUpdate.get());
             userOptional.get().setClassList(classList);
             userService.update(userOptional.get());
 

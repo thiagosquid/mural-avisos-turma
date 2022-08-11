@@ -50,7 +50,7 @@ public class User {
     @Column(length = 25, nullable = false)
     private Role role = Role.USER;
 
-    @Column(length = 100)
+    @Column(length = 300)
     private String avatar;
 
     @JsonIgnore

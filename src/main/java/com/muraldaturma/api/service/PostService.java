@@ -13,7 +13,9 @@ import com.muraldaturma.api.repository.ClassRepository;
 import com.muraldaturma.api.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -100,7 +102,9 @@ public class PostService {
                 .orElseThrow(() -> new ClassNotFoundException(String.format("Não foi encontrada classe com o id:  %d", classId), "class.notFound"));
 
         User user = userService.findById(REQUEST_USER_ID).get();
-        return postRepository.findByaClass(classToFilter, pageable).map(p -> {
+        Pageable page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return postRepository.findByaClass(classToFilter, page).map(p -> {
             PostDTO postDTO = postMapper.toDTO(p);
             if (p.getUsersFavorited().contains(user)) {
                 postDTO.setFavorite(true);

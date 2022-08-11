@@ -45,5 +45,5 @@ public class UserDTO {
 //
 //    private List<Post> favoritesPosts = new ArrayList<>();
 
-//    private Set<Class> classList = new HashSet<>();
+    private Set<ClassDTO> classList = new HashSet<>();
 }

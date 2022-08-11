@@ -10,6 +10,7 @@ public class PropertiesConfiguration {
     public static String API_BASE_URL;
     public static String FRONT_BASE_URL;
     public static String TOKEN_PASSWORD_MURAL;
+    public static String CLOUDINARY_URL;
 
 
     @Value("${spring.profiles.active}")
@@ -30,5 +31,10 @@ public class PropertiesConfiguration {
     @Value("${api.key}")
     public void setTokenPasswordMural(String tokenPasswordMural) {
         PropertiesConfiguration.TOKEN_PASSWORD_MURAL = tokenPasswordMural;
+    }
+
+    @Value("${cloudinary.url}")
+    public void setCloudinaryUrl(String cloudinaryUrl) {
+        PropertiesConfiguration.CLOUDINARY_URL = cloudinaryUrl;
     }
 }

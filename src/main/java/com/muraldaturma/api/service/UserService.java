@@ -196,16 +196,17 @@ public class UserService {
     public String changePassword(PasswordRecoveryDto passwordRecoveryDto) throws UserNotFoundException, TokenException {
         User user = userRepository.getById(passwordRecoveryDto.getId());
 
-        ConfirmationToken confirmationToken = confirmationTokenService.getToken(passwordRecoveryDto.getToken()).get();
+        ConfirmationToken confirmationToken = confirmationTokenService.getToken(passwordRecoveryDto.getToken())
+                .orElseThrow(()-> new TokenException("Token não encontrado","error.token"));
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new TokenException("Esta solicitação de renovação de senha está expirada. Para alterá-la, solicite novamente!", "error.token");
+            throw new TokenException("Esta solicitação de renovação já foi utilizada. Faça uma nova requisição!", "error.token");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new TokenException("Esta solicitação de renovação de senha expirada. Solicite uma nova renovação de senha!", "error.token");
+            throw new TokenException("Esta solicitação de renovação de senha está expirada. Solicite uma nova renovação de senha!", "error.token");
         }
 
         confirmationTokenService.setConfirmedAt(confirmationToken);
