@@ -1,20 +1,19 @@
 package com.muraldaturma.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+//@Builder
+
+@Entity
 @Table(name = "tb_tag")
 public class Tag {
 
@@ -25,7 +24,12 @@ public class Tag {
     @Column(length = 30, nullable = false, unique = true)
     private String description;
 
-    @OneToMany(mappedBy = "tag")
-    @JsonIgnore
-    private Set<Post> postList = new HashSet<>();
+    @OneToMany(mappedBy = "tag", fetch = FetchType.LAZY)
+    //@JsonIgnore
+    @ToString.Exclude
+    private List<Post> postList = new ArrayList<Post>();
 }
+
+
+
+

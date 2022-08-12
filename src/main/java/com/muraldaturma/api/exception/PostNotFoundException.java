@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class ClassNotFoundException extends RuntimeException {
+public class PostNotFoundException extends RuntimeException {
 
-    public ClassNotFoundException(String description, String causeMessage) {
+    public PostNotFoundException(String description, String causeMessage) {
         super(description, new Throwable(causeMessage, null));
     }
 

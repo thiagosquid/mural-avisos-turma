@@ -6,8 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muraldaturma.api.data.UserDetailData;
 import com.muraldaturma.api.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,13 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
+
 @Slf4j
 public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     public static final int TOKEN_EXPIRATION = 10 * 60 * 1000;
-
-    public static String TOKEN_PASSWORD_MURAL = System.getenv("TOKEN_PASSWORD_MURAL");
-
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
@@ -46,21 +48,31 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
             user = new ObjectMapper()
                     .readValue(request.getInputStream(), User.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            Map<String, String> res = new HashMap<>();
+            res.put("message", "Usuário e senha não podem estar vazios");
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setContentType("application/json");
+            try {
+                new ObjectMapper().writeValue(response.getOutputStream(), res);
+            } catch (IOException ex) {
+                log.warn(ex.getMessage());
+            }
+            return null;
         }
 
         Collection<SimpleGrantedAuthority> authority = new ArrayList<>();
-        authority.add(new SimpleGrantedAuthority(user.getRole()));
+        authority.add(new SimpleGrantedAuthority(user != null ? user.getRole().toString() : "USER"));
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(),
-                user.getPassword(),
+                user != null ? user.getUsername() : "",
+                user != null ? user.getPassword() : "",
                 authority
         );
 
         try {
             return authenticationManager.authenticate(authentication);
-        } catch (Exception e) {
+        } catch (BadCredentialsException e) {
             log.warn(e.getMessage());
             Map<String, String> res = new HashMap<>();
             res.put("message", "Usuário ou senha incorretos");
@@ -86,14 +98,14 @@ public class JWTAutenticationFilter extends UsernamePasswordAuthenticationFilter
         String accessToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
-                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION / 60)) //alterado para teste no front
+                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
         String refreshToken = JWT.create()
                 .withSubject(userData.getUsername())
                 .withClaim("userId", userData.getId())
                 .withJWTId("1")
-                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION / 30)) //alterado para teste no front
+                .withExpiresAt(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION * 3))
                 .sign(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL));
 
         Map<String, String> tokens = new HashMap<>();

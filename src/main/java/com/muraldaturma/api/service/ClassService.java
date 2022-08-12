@@ -1,51 +1,70 @@
 package com.muraldaturma.api.service;
 
+import com.muraldaturma.api.dto.ClassDTO;
+import com.muraldaturma.api.dto.mapper.ClassMapper;
+import com.muraldaturma.api.dto.mapper.ClassMapperImpl;
 import com.muraldaturma.api.exception.ClassNotFoundException;
 import com.muraldaturma.api.exception.UserNotFoundException;
+import com.muraldaturma.api.exception.UsernameAlreadyExistsException;
 import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.ClassRepository;
-import com.muraldaturma.api.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@Slf4j
 public class ClassService {
 
-    private final ClassRepository classRepository;
-    private final UserRepository userRepository;
+    @Autowired
+    private ClassRepository classRepository;
 
-    public List<Class> getAll() {
-        return classRepository.findAll();
+    @Autowired
+    private UserService userService;
+
+    private final ClassMapper classMapper = new ClassMapperImpl();
+
+    public List<ClassDTO> getAll() {
+        return classMapper.toListDTO(classRepository.findAll());
     }
 
-    public Class getById(Long id) throws Exception {
-        Optional<Class> classFound = classRepository.findById(id);
+    public ClassDTO getById(Long classId) {
+        Optional<Class> classFound = classRepository.findById(classId);
         if (classFound.isEmpty()) {
-            throw new Exception("Turma não encontrada!");
+            throw new ClassNotFoundException(String.format("Não foi encontrada  turma com esse id: %d", classId), "class.notFound");
         }
-        return classFound.get();
+        return classMapper.toDTO(classFound.get());
     }
 
-    public Class create(Class classToCreate) {
-        return classRepository.save(classToCreate);
+    public ClassDTO create(ClassDTO classToCreateDTO) {
+        Class classToCreate = classMapper.toModel(classToCreateDTO);
+        Class classSaved = classRepository.save(classToCreate);
+        return classMapper.toDTO(classSaved);
     }
 
-    public void addStudent(Long classId, String username) throws UserNotFoundException, ClassNotFoundException {
+    @Transactional
+    public void addStudentToClass(Long classId, String username) {
         Optional<Class> classToUpdate = classRepository.findById(classId);
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<User> userOptional = userService.findByUsername(username);
 
-        if (user.isPresent() && classToUpdate.isPresent()) {
-            user.get().getClassList().add(classToUpdate.get());
-            userRepository.save(user.get());
-        } else if (user.isEmpty()) {
-            throw new UserNotFoundException(username);
+        if (userOptional.isPresent() && classToUpdate.isPresent()) {
+            List<Class> classList = userOptional.get().getClassList();
+            if (classList.contains(classToUpdate.get())) {
+                throw new UsernameAlreadyExistsException(String.format("O usuário %s já está na turma", username), "user.alreadyExist");
+            }
+            classList.add(classToUpdate.get());
+            userOptional.get().setClassList(classList);
+            userService.update(userOptional.get());
+
+        } else if (userOptional.isEmpty()) {
+            throw new UserNotFoundException(String.format("Não foi encontrado usuário com esse username: %s", username), "user.notFound");
         } else if (classToUpdate.isEmpty()) {
-            throw new ClassNotFoundException(classId);
+            throw new ClassNotFoundException(String.format("Não foi encontrada  turma com esse id: %d", classId), "class.notFound");
         }
 
     }

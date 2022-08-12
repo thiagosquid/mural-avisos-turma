@@ -3,7 +3,6 @@ package com.muraldaturma.api.controller;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muraldaturma.api.dto.RefreshTokenRequestDto;
@@ -13,7 +12,9 @@ import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.security.JWTValidateFilter;
 import com.muraldaturma.api.service.UserService;
+import com.muraldaturma.api.utils.Role;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,15 +29,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_PASSWORD_MURAL;
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/user")
+@RequestMapping(value = "/user")
 public class UserController {
 
     private final UserService userService;
     private final PasswordEncoder encoder;
+    @Autowired
+    private UserMapper userMapper; //TODO passar mapper para a service e implementar exception handler nessa classe
 
     public UserController(UserService userService, PasswordEncoder encoder) {
         this.userService = userService;
@@ -49,22 +52,21 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Long id) {
-        Optional<User> user = null;
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        Optional<User> user;
         try {
             user = userService.findById(id);
         } catch (UserNotFoundException e) {
-            e.getMessage();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body(UserMapper.toDto(user.get()));
+        return ResponseEntity.status(HttpStatus.OK).body(userMapper.toDTO(user.get()));
     }
 
     @PostMapping("/set-admin/{id}")
     public void setAdmin(@PathVariable Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             User user = userService.findById(id).get();
-            user.setRole("ADMIN");
+            user.setRole(Role.ADMIN);
             String token = request.getHeader(JWTValidateFilter.HEADER_ATTRIBUTE).substring("Bearer ".length());
             Algorithm algorithm = Algorithm.HMAC512(TOKEN_PASSWORD_MURAL);
             JWTVerifier verifier = JWT.require(algorithm).build();
@@ -103,7 +105,7 @@ public class UserController {
         } catch (MessagingException | IOException e) {
             e.printStackTrace();
         }
-        return ResponseEntity.ok().body(confirmation);
+        return ResponseEntity.ok().body("ReturnToLogin.html");
     }
 
     @CrossOrigin("*")
@@ -125,12 +127,9 @@ public class UserController {
     @PostMapping("/recovery")
     public ResponseEntity<?> recovery(@RequestBody PasswordRecoveryDto passwordRecoveryDto) {
         passwordRecoveryDto.setPassword(encoder.encode(passwordRecoveryDto.getPassword()));
-        try {
-            String res = userService.changePassword(passwordRecoveryDto);
-            return ResponseEntity.status(HttpStatus.OK).body(res);
-        } catch (UserNotFoundException | TokenException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+        String res = userService.changePassword(passwordRecoveryDto);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
+
     }
 
     @PostMapping("/refreshtoken")

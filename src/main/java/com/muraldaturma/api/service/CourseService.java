@@ -1,61 +1,70 @@
 package com.muraldaturma.api.service;
 
+import com.muraldaturma.api.dto.CourseDTO;
+import com.muraldaturma.api.dto.mapper.CourseMapper;
+import com.muraldaturma.api.exception.CourseAlreadyExistsException;
 import com.muraldaturma.api.exception.CourseNotFoundException;
 import com.muraldaturma.api.model.Course;
 import com.muraldaturma.api.repository.CourseRepository;
-import com.muraldaturma.api.exception.CourseAlreadyExistsException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class CourseService {
 
-    private final CourseRepository courseRepository;
+    @Autowired
+    private CourseRepository courseRepository;
 
-    public List<Course> getAll(){
-        return courseRepository.findAll();
+    @Autowired
+    private CourseMapper courseMapper;
+
+    public List<CourseDTO> getAll() {
+        return courseMapper.toListDTO(courseRepository.findAll());
     }
 
-    public Course getById(Integer id) throws CourseNotFoundException {
-        boolean exists = courseRepository.existsById(id);
-        if (exists) {
-            Course courseFound = courseRepository.getById(id);
-            return courseFound;
+    public CourseDTO getById(Integer id) {
+        Optional<Course> courseFound = courseRepository.findById(id);
+        if (courseFound.isPresent()) {
+            return courseMapper.toDTO(courseFound.get());
         } else {
-            throw new CourseNotFoundException(id);
+            throw new CourseNotFoundException(String.format("Curso com id %d não encontrado.", id), "course.notFound");
         }
-
     }
 
-    public void create(Course course) throws CourseAlreadyExistsException {
+    public CourseDTO create(CourseDTO courseDTO) {
+        Course course = courseMapper.toModel(courseDTO);
         boolean exists = courseRepository.existsCourseByName(course.getName());
         if (!exists) {
             courseRepository.saveAndFlush(course);
+            return courseMapper.toDTO(course);
         } else {
-            throw new CourseAlreadyExistsException(course.getName());
+            throw new CourseAlreadyExistsException(String.format("Já existe um curso com o nome %s",course.getName()),"course.alreadyExist");
         }
     }
 
-    public void deleteById(Integer id) throws CourseNotFoundException {
+    public void deleteById(Integer id) {
         boolean exists = courseRepository.existsById(id);
         if (exists) {
             courseRepository.deleteById(id);
         } else {
-            throw new CourseNotFoundException(id);
+            throw new CourseNotFoundException(String.format("Curso com id %d não encontrado.", id), "course.notFound");
         }
     }
 
-    public Course update(Integer id, Course course) throws CourseNotFoundException {
+    public CourseDTO update(Integer id, CourseDTO courseDTO) throws CourseNotFoundException {
+        Course courseToUpdate = courseMapper.toModel(courseDTO);
         Optional<Course> oldCourse = courseRepository.findById(id);
+
         if (oldCourse.isPresent()) {
-            course.setId(oldCourse.get().getId());
-            return courseRepository.save(course);
-        }else{
-            throw new CourseNotFoundException(id);
+            BeanUtils.copyProperties(courseDTO, oldCourse.get(),"id");
+            return courseMapper.toDTO(courseRepository.save(oldCourse.get()));
+        } else {
+            throw new CourseNotFoundException(String.format("Curso com id %d não encontrado.", id), "course.notFound");
         }
     }
 }

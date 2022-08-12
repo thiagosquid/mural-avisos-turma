@@ -2,9 +2,10 @@ package com.muraldaturma.api.exception.handler;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.muraldaturma.api.exception.TagException;
-import com.muraldaturma.api.exception.TokenException;
+import com.muraldaturma.api.exception.ClassNotFoundException;
+import com.muraldaturma.api.exception.*;
 import com.muraldaturma.api.utils.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -20,12 +21,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice
+@Slf4j
 public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Autowired
@@ -49,19 +50,71 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({TokenExpiredException.class, TokenException.class, JWTVerificationException.class})
     protected ResponseEntity<Object> handleTokenException(RuntimeException ex,
-                                                                           WebRequest request) {
+                                                          WebRequest request) {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler({CourseNotFoundException.class, CourseAlreadyExistsException.class})
+    protected ResponseEntity<Object> handleCourseException(RuntimeException ex,
+                                                           WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
         return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     @ExceptionHandler({TagException.class})
     protected ResponseEntity<Object> handleBadRequestsException(RuntimeException ex,
-                                                            WebRequest request) {
+                                                                WebRequest request) {
         String message = ex.getMessage();
         String code = ex.getCause().getMessage();
         ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({UsernameAlreadyExistsException.class, UserNotFoundException.class, UserInvalidEmailException.class})
+    protected ResponseEntity<Object> handleUserException(RuntimeException ex,
+                                                         WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({PostNotFoundException.class})
+    protected ResponseEntity<Object> handlePostException(RuntimeException ex,
+                                                         WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({ClassNotFoundException.class})
+    protected ResponseEntity<Object> handleClassException(RuntimeException ex,
+                                                          WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getCause().toString());
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({SQLException.class})
+    protected ResponseEntity<Object> handleSqlException(RuntimeException ex,
+                                                          WebRequest request) {
+        String message = ex.getMessage();
+        String code = ex.getCause().getMessage();
+        ErrorResponse errorResponse = new ErrorResponse(message, code);
+        log.error(ex.getMessage());
         return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
@@ -71,6 +124,7 @@ public class MuralExceptionHandler extends ResponseEntityExceptionHandler {
         for (FieldError fieldError : bindingResult.getFieldErrors()) {
             String message = messageSource.getMessage(fieldError, LocaleContextHolder.getLocale());
             String code = fieldError.getCode();
+            log.error(message);
             errorResponses.add(new ErrorResponse(message, code));
         }
         return errorResponses;

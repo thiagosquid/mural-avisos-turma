@@ -6,7 +6,9 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.service.UserService;
+import com.muraldaturma.api.utils.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,11 +26,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
+
 @Slf4j
 public class JWTValidateFilter extends BasicAuthenticationFilter {
 
     public static final String HEADER_ATTRIBUTE = "Authorization";
     public static final String PREFIX_ATTRIBUTE = "Bearer ";
+
+    public static Long REQUEST_USER_ID;
 
     private final UserService userService;
 
@@ -77,7 +83,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
         DecodedJWT decodedJWT = null;
         try {
-            decodedJWT = JWT.require(Algorithm.HMAC512(JWTAutenticationFilter.TOKEN_PASSWORD_MURAL))
+            decodedJWT = JWT.require(Algorithm.HMAC512(TOKEN_PASSWORD_MURAL))
                     .build()
                     .verify(token);
         } catch (JWTVerificationException | IllegalArgumentException e) {
@@ -87,16 +93,18 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
         String username = decodedJWT.getSubject();
         String tokenType = decodedJWT.getId();
         Long userId = decodedJWT.getClaim("userId").asLong();
-        String role = "";
+        Role role = Role.USER;
         try {
-            role = userService.findById(userId).get().getRole();
+            User user = userService.findById(userId).get();
+            REQUEST_USER_ID = user.getId();
+            role = user.getRole();
         } catch (Exception e) {
             log.error(e.getMessage());
         }
 //        String role = decodedJWT.getClaim("role").asString();
 
         Collection<SimpleGrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(role));
+        roles.add(new SimpleGrantedAuthority(role.toString()));
 
         if (username == null || tokenType != null) {
             return null;

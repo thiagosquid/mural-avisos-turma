@@ -1,37 +1,45 @@
 package com.muraldaturma.api.dto.mapper;
 
-import com.muraldaturma.api.dto.PostDto;
+import com.muraldaturma.api.dto.PostDTO;
+import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.Post;
+import org.mapstruct.*;
 
-public class PostMapper {
+import java.util.List;
 
-    public static PostDto toDto(Post post){
-        PostDto postDto = new PostDto(post.getId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getDeadline(),
-                post.getCreatedAt(),
-                post.getTag(),
-                post.getUser(),
-                post.getAClass(),
-                post.getCommentList(),
-                post.getUsersFavorited());
+@Named("PostMapper")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {TagMapper.class, UserMapper.class, ClassMapper.class})
+public interface PostMapper {
+//    PostMapper INSTANCE = Mappers.getMapper( PostMapper.class );
 
-        return postDto;
-    }
+    Post toModel(PostDTO dto);
 
-    public static Post toModel(PostDto postDto){
-        Post post = new Post(postDto.getId(),
-                postDto.getTitle(),
-                postDto.getContent(),
-                postDto.getDeadline(),
-                postDto.getCreatedAt(),
-                postDto.getTag(),
-                postDto.getUser(),
-                postDto.getAClass(),
-                postDto.getCommentList(),
-                postDto.getUsersFavorited());
+    @Named("toDTO")
+    @Mappings({
+            @Mapping(target = "comments",
+                    expression = "java(model.getCommentList().size())"),
+            @Mapping(target = "aClass",
+                    expression = "java(model.getAClass().toString())"),
+            @Mapping(target = "favorite",
+                    source = "favorite")
+    })
+    PostDTO toDTO(Post model);
 
-        return post;
-    }
+    //    @Named("toDTOWithoutTag")
+//    @Mappings({
+//            @Mapping(target = "tag", ignore = true)
+//    })
+    PostDTO toDTOWithoutTag(Post model);
+
+    //    HashSet<Post> toModel(HashSet<PostDTO> dtoSet);
+    @Mappings({
+            @Mapping(target = "comments",
+                    expression = "java(model.getCommentList().size())"),
+            @Mapping(target = "aClass",
+                    expression = "java(model.getAClass().toString())")
+    })
+    List<PostDTO> toListDTO(List<Post> modelList);
+
+    Class map(String value);
+
 }

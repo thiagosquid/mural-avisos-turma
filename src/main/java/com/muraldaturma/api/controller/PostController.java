@@ -1,30 +1,30 @@
 package com.muraldaturma.api.controller;
 
-import com.muraldaturma.api.dto.PostDto;
-import com.muraldaturma.api.dto.mapper.PostMapper;
-import com.muraldaturma.api.exception.ClassNotFoundException;
-import com.muraldaturma.api.exception.UserNotFoundException;
-import com.muraldaturma.api.model.Post;
+import com.muraldaturma.api.dto.PostDTO;
+import com.muraldaturma.api.event.CreatedResourceEvent;
 import com.muraldaturma.api.service.PostService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping(value = "/api/v1/post")
+@Slf4j
+@RequestMapping(value = "/post")
 public class PostController {
 
     @Autowired
     private PostService postService;
 
-//    @Autowired
-//    private UserService userService;
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
 //    @GetMapping
 //    @ResponseStatus(HttpStatus.OK)
@@ -33,46 +33,63 @@ public class PostController {
 //        return postService.getAll();
 //    }
 
-    @GetMapping(value = "/{postId}")
-    public ResponseEntity<PostDto> getById(@PathVariable Long postId){
-        Optional<Post> post = postService.getById(postId);
-        if(post.isPresent()){
-            return ResponseEntity.status(HttpStatus.OK).body(PostMapper.toDto(post.get()));
-        }
-
-        return ResponseEntity.notFound().build();
-
-    }
-
     @GetMapping
-    public ResponseEntity<?> getAllPageable(Pageable pageable, @RequestParam("classId") Long classId){
-        try {
-            Page<Post> postListPageable = postService.getAllByClassPageable(pageable, classId);
-            return ResponseEntity.status(HttpStatus.OK).body(postListPageable);
-        } catch (ClassNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<Page<PostDTO>> getAllPageable(@RequestParam("classId") Long classId, Pageable pageable) {
+        Page<PostDTO> postListPageable = postService.getAllByClassPageable(pageable, classId);
+        return ResponseEntity.status(HttpStatus.OK).body(postListPageable);
     }
 
-    public List<Post> getByUser(Long userId) throws UserNotFoundException {
+    @GetMapping(value = "/{postId}")
+    public ResponseEntity<PostDTO> getById(@PathVariable Long postId) {
+        PostDTO postDTO = postService.getDTOById(postId);
+        return ResponseEntity.status(HttpStatus.OK).body(postDTO);
 
-        List<Post> postList = postService.getByUser(userId);
-
-        return postList;
     }
 
+    @GetMapping("/a")
+    public ResponseEntity<Page<PostDTO>> getByUser(@RequestParam Long userId,
+                                                   @RequestParam Long classId,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok().body(postService.getAllPageable(pageable, userId, classId));
+//        return postService.getByUser(userId);
+    }
 
-    @PostMapping(value = "/{userId}")
-    public ResponseEntity<Post> insert(@RequestBody Post post, @PathVariable Long userId) throws UserNotFoundException {
+    @PostMapping
+    public ResponseEntity<PostDTO> insert(@RequestBody PostDTO postDTO
+            , @RequestParam(value = "userId") Long userId, @RequestParam(value = "classId") Long classId
+            , HttpServletResponse response) {
 
-        post.setId(null);
-//        post.setUser(userService.findById(userId).get());
-        return ResponseEntity.ok(postService.insert(post));
+        postDTO.setId(null);
+        PostDTO postSavedDTO = postService.insert(postDTO, userId, classId);
+        publisher.publishEvent(new CreatedResourceEvent(this, response, postSavedDTO.getId()));
+        log.info("Criado Post com ID \"{}\" pelo usuário \"{}\"", postSavedDTO.getId(), postSavedDTO.getUser().getUsername());
+
+        return ResponseEntity.ok(postSavedDTO);
+    }
+
+    @GetMapping("/{postId}/favorite")
+    public ResponseEntity<?> favoritePost(@RequestParam(value = "userId") Long userId
+            , @PathVariable(name = "postId") Long postId) {
+
+        return ResponseEntity.ok(
+                postService.favoritePost(postId, userId)
+        );
+    }
+
+    @GetMapping("/{postId}/disfavor")
+    public ResponseEntity<PostDTO> disfavorPost(@RequestParam(value = "userId") Long userId
+            , @PathVariable(name = "postId") Long postId) {
+
+        return ResponseEntity.ok(
+                postService.disfavorPost(postId, userId)
+        );
     }
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id){
+    public void delete(@PathVariable Long id) {
         postService.delete(id);
     }
 }

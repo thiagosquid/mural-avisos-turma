@@ -1,67 +1,56 @@
 package com.muraldaturma.api.controller;
 
-import com.muraldaturma.api.exception.ClassNotFoundException;
-import com.muraldaturma.api.exception.UserNotFoundException;
-import com.muraldaturma.api.model.Class;
+import com.muraldaturma.api.dto.ClassDTO;
+import com.muraldaturma.api.event.CreatedResourceEvent;
 import com.muraldaturma.api.service.ClassService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/class")
-@AllArgsConstructor
+@RequestMapping("/class")
 @Slf4j
 public class ClassController {
 
-    private final ClassService classService;
+    @Autowired
+    private ClassService classService;
+
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Class> getAll() {
+    public List<ClassDTO> getAll() {
         return classService.getAll();
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        Class classFound = new Class();
-        try {
-            classFound = classService.getById(id);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<ClassDTO> getById(@PathVariable Long id) {
+        ClassDTO classFound;
+        classFound = classService.getById(id);
         return ResponseEntity.ok().body(classFound);
     }
 
     @PostMapping
-    public ResponseEntity create(@RequestBody Class classToCreate, HttpServletRequest request) {
-        Class classSaved = classService.create(classToCreate);
+    public ResponseEntity<ClassDTO> create(@RequestBody ClassDTO classToCreateDTO, HttpServletResponse response) {
+        ClassDTO classSaved = classService.create(classToCreateDTO);
 
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(classSaved.getId())
-                .toUri();
+        publisher.publishEvent(new CreatedResourceEvent(this, response, classSaved.getId()));
         log.info("Criada a classe {}", classSaved);
-        return ResponseEntity.created(uri).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(classSaved);
     }
 
     @PostMapping("/{classId}")
-    public ResponseEntity<?> addStudent(@PathVariable("classId") Long classId
+    public ResponseEntity<?> addStudentAtClass(@PathVariable("classId") Long classId
             , @RequestParam("username") String username) {
-        try {
-            classService.addStudent(classId, username);
-        } catch (UserNotFoundException | ClassNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        classService.addStudentToClass(classId, username);
         return ResponseEntity.ok().build();
     }
 
