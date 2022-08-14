@@ -15,7 +15,7 @@
     <description>Api para Sistema de Fórum, Comunicação e Estudos do IFS</description>
     <properties>
         <java.version>11</java.version>
-        <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+        <org.mapstruct.version>1.5.2.Final</org.mapstruct.version>
     </properties>
     <dependencies>
         <dependency>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>com.cloudinary</groupId>
             <artifactId>cloudinary-http44</artifactId>
-            <version>1.30.0</version>
+            <version>1.32.2</version>
         </dependency>
         <!-- Bean Validation -->
         <dependency>

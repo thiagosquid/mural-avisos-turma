@@ -20,15 +20,16 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.http.HttpRequest;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
 
 import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
 
-@Slf4j
+@Slf4j(topic = "Request")
 public class JWTValidateFilter extends BasicAuthenticationFilter {
 
     public static final String HEADER_ATTRIBUTE = "Authorization";
@@ -47,6 +48,9 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
+
+        long startTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
+        String session = request.getSession().getId();
 
         String attribute = request.getHeader(HEADER_ATTRIBUTE);
 
@@ -77,6 +81,25 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         chain.doFilter(request, response);
+
+        long totalTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() - startTime;
+
+        StringBuilder s = new StringBuilder();
+        int count = request.getParameterMap().size();
+        if(count > 0){
+            s.append("?");
+            for(Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()){
+                count--;
+                s.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue()));
+
+                if(count > 0){
+                    s.append("&");
+                }
+            }
+        }
+
+        log.info("method={} path={} query={} session={} fwd={} status={} service={}ms protocol={}"
+                , request.getMethod(), request.getRequestURI(), s, session , request.getRemoteAddr(), response.getStatus(), totalTime, request.getProtocol());
     }
 
     private UsernamePasswordAuthenticationToken getAuthenticationToken(String token) {
