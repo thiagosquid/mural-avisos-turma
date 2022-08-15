@@ -4,10 +4,8 @@ package com.muraldaturma.api.dto.mapper;
 import com.muraldaturma.api.dto.ClassDTO;
 import com.muraldaturma.api.model.Class;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 

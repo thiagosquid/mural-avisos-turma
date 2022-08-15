@@ -56,11 +56,13 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
         if (attribute == null) {
             chain.doFilter(request, response);
+            generateLog(request, response, session, startTime);
             return;
         }
 
         if (!attribute.startsWith(PREFIX_ATTRIBUTE)) {
             chain.doFilter(request, response);
+            generateLog(request, response, session, startTime);
             return;
         }
 
@@ -81,7 +83,9 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         chain.doFilter(request, response);
+    }
 
+    private void generateLog(HttpServletRequest request, HttpServletResponse response, String session, long startTime){
         long totalTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() - startTime;
 
         StringBuilder s = new StringBuilder();
