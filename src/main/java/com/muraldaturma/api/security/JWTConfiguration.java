@@ -24,7 +24,9 @@ public class JWTConfiguration extends WebSecurityConfigurerAdapter {
             "/swagger-ui.html",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/webjars/**"
+            "/webjars/**",
+            "/test/**",
+            "/teste/**"
     };
 
     private static final String[] POST_ENDPOINTS = {

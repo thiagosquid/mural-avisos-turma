@@ -11,6 +11,7 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonRootName(value = "post")

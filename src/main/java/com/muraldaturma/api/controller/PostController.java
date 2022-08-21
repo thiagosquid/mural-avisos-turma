@@ -2,6 +2,7 @@ package com.muraldaturma.api.controller;
 
 import com.muraldaturma.api.dto.PostDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
+import com.muraldaturma.api.model.Post;
 import com.muraldaturma.api.service.PostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -26,12 +28,19 @@ public class PostController {
     @Autowired
     private ApplicationEventPublisher publisher;
 
-//    @GetMapping
+//    @GetMapping(value = "/test")
 //    @ResponseStatus(HttpStatus.OK)
-//    public List<Post> getAll() {
+//    public Page<PostDTO> getAll(Pageable pageable, @RequestParam("title") String title, @RequestParam(required = false, value = "content") String content) {
 //
-//        return postService.getAll();
+//        return postService.getAllPagedAndFiltered(pageable, title, content);
 //    }
+
+    @GetMapping(value = "/test")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostDTO> getAll(Pageable pageable, @RequestParam("title") String title, @RequestParam(required = false, value = "content") String content) {
+
+        return postService.getAllPagedAndFiltered2(title, content, pageable);
+    }
 
     @GetMapping
     public ResponseEntity<Page<PostDTO>> getAllPageable(@RequestParam("classId") Long classId, Pageable pageable) {

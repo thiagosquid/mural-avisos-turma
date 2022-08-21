@@ -12,12 +12,14 @@ import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.ClassRepository;
 import com.muraldaturma.api.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.muraldaturma.api.security.JWTValidateFilter.REQUEST_USER_ID;
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 
 @Service
 public class PostService {
@@ -122,6 +125,31 @@ public class PostService {
         User user = userService.findById(userId).get();
         Class aClass = classMapper.toModel(classService.getById(classId));
         return postRepository.findByaClassAndUser(aClass, user, pageable).map(postMapper::toDTO);
+    }
+
+    public Page<PostDTO> getAllPagedAndFiltered(Pageable pageable, String filter1, String filter2) {
+        ExampleMatcher matcher = ExampleMatcher.matchingAll()
+                .withMatcher("title", contains().ignoreCase())
+                .withMatcher("content", contains().ignoreCase());
+
+        Pageable page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Post example = Post.builder().title(filter1).content(filter2).build();
+
+        return postRepository.findAll(Example.of(example, matcher), page).map(postMapper::toDTO);
+    }
+
+    public List<PostDTO> getAllPagedAndFiltered2(String title, String content, Pageable pageable){
+        Page<Post> page = postRepository.findAll((Specification<Post>) (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if(title!=null) {
+                predicates.add(criteriaBuilder.and(criteriaBuilder.like(criteriaBuilder.concat("%",criteriaBuilder.concat(root.get("title"), "%")), "%" + title + "%")));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        }, pageable);
+        page.getTotalElements();        // get total elements
+        page.getTotalPages();           // get total pages
+        return postMapper.toListDTO(page.getContent());
     }
 
     @Transactional

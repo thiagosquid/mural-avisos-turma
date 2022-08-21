@@ -85,7 +85,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
         chain.doFilter(request, response);
     }
 
-    private void generateLog(HttpServletRequest request, HttpServletResponse response, String session, long startTime){
+    protected static void generateLog(HttpServletRequest request, HttpServletResponse response, String session, long startTime){
         long totalTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() - startTime;
 
         StringBuilder s = new StringBuilder();
