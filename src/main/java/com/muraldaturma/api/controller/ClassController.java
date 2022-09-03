@@ -4,7 +4,6 @@ import com.muraldaturma.api.dto.ClassDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
 import com.muraldaturma.api.service.ClassService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,14 @@ import java.util.List;
 @Slf4j
 public class ClassController {
 
-    @Autowired
-    private ClassService classService;
+    private final ClassService classService;
 
-    @Autowired
-    private ApplicationEventPublisher publisher;
+    private final ApplicationEventPublisher publisher;
+
+    public ClassController(ClassService classService, ApplicationEventPublisher publisher) {
+        this.classService = classService;
+        this.publisher = publisher;
+    }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)

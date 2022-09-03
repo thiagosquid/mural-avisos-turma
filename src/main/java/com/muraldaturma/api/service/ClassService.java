@@ -10,7 +10,6 @@ import com.muraldaturma.api.model.Class;
 import com.muraldaturma.api.model.User;
 import com.muraldaturma.api.repository.ClassRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -21,13 +20,16 @@ import java.util.Optional;
 @Slf4j
 public class ClassService {
 
-    @Autowired
-    private ClassRepository classRepository;
+    private final ClassRepository classRepository;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     private final ClassMapper classMapper = new ClassMapperImpl();
+
+    public ClassService(ClassRepository classRepository, UserService userService) {
+        this.classRepository = classRepository;
+        this.userService = userService;
+    }
 
     public List<ClassDTO> getAll() {
         return classMapper.toListDTO(classRepository.findAll());

@@ -4,7 +4,6 @@ import com.muraldaturma.api.dto.TagDTO;
 import com.muraldaturma.api.event.CreatedResourceEvent;
 import com.muraldaturma.api.service.TagService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,14 @@ import java.util.List;
 @Slf4j
 public class TagController {
 
-    @Autowired
     private TagService tagService;
 
-    @Autowired
     private ApplicationEventPublisher publisher;
+
+    public TagController(TagService tagService, ApplicationEventPublisher publisher) {
+        this.tagService = tagService;
+        this.publisher = publisher;
+    }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -43,20 +45,14 @@ public class TagController {
             TagDTO tagSaved = tagService.create(tagList.get(0));
             publisher.publishEvent(new CreatedResourceEvent(this, response, tagSaved.getId().longValue()));
             log.info("Criada TAG com id \"{}\" e descrição \"{}\"", tagSaved.getId(), tagSaved.getDescription());
+
             return ResponseEntity.status(HttpStatus.CREATED).body(tagSaved);
         } else {
-//                try {
             tagService.createAll(tagList);
-//                } catch (Exception e) {
-//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//                }
             log.info("Criadas as seguintes TAG's {}", tagList);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(tagList);
         }
-//        } catch (TagExistsException e) {
-//            log.error(e.getMessage());
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
     }
 
     @DeleteMapping("{tagIdList}")
