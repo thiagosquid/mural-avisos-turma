@@ -83,6 +83,7 @@ public class JWTValidateFilter extends BasicAuthenticationFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         chain.doFilter(request, response);
+        generateLog(request, response, session, startTime);
     }
 
     protected static void generateLog(HttpServletRequest request, HttpServletResponse response, String session, long startTime){
