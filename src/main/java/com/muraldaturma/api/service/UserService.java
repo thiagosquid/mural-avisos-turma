@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.muraldaturma.api.configuration.PropertiesConfiguration.*;
 import static com.muraldaturma.api.configuration.PropertiesConfiguration.TOKEN_PASSWORD_MURAL;
 import static com.muraldaturma.api.security.JWTAutenticationFilter.TOKEN_EXPIRATION;
 
@@ -81,7 +82,7 @@ public class UserService {
             );
 
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            String link = PropertiesConfiguration.API_BASE_URL.concat("/api/v1/user/confirm?token=").concat(token);
+            String link = API_BASE_URL.concat("/api/v1/user/confirm?token=").concat(token);
             if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
                 Mail mailer = new Mail();
                 mailer.sendConfirmationAccount(user, link);
@@ -125,8 +126,9 @@ public class UserService {
             confirmationToken.setCreatedAt(LocalDateTime.now());
             confirmationToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
             confirmationTokenService.saveConfirmationToken(confirmationToken);
-            String link = PropertiesConfiguration.API_BASE_URL.concat("/api/v1/user/confirm?token=").concat(newToken);
-            if (System.getenv("SEND_EMAIL") != null && System.getenv("SEND_EMAIL").equals("true")) {
+            String link = API_BASE_URL.concat("/api/v1/user/confirm?token=").concat(newToken);
+
+            if (SEND_EMAIL != null && SEND_EMAIL.equals("true")) {
                 Mail mailer = new Mail();
                 mailer.sendConfirmationAccount(user, link);
             } else {
@@ -141,7 +143,7 @@ public class UserService {
         update(user);
         return "<h1 style=\"color=red; weight=bold; margin: auto\">Conta verificada</h1>" +
                 "<p style=\"margin: auto;\">Estamos redirecionando para página de login...</p>" +
-                "<script> setTimeout(()=> window.location.replace(\"" + PropertiesConfiguration.FRONT_BASE_URL + "\"), 3500); </script>";
+                "<script> setTimeout(()=> window.location.replace(\"" + FRONT_BASE_URL + "\"), 3500); </script>";
     }
 
     /**
@@ -173,7 +175,7 @@ public class UserService {
         );
 
         confirmationTokenService.saveConfirmationToken(confirmationToken);
-        String link = PropertiesConfiguration.FRONT_BASE_URL.concat("/recovery_password?token=")
+        String link = FRONT_BASE_URL.concat("/recovery_password?token=")
                 .concat(token)
                 .concat("&id=").
                 concat(user.getId().toString());

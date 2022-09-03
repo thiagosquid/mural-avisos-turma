@@ -11,7 +11,7 @@ public class PropertiesConfiguration {
     public static String FRONT_BASE_URL;
     public static String TOKEN_PASSWORD_MURAL;
     public static String CLOUDINARY_URL;
-
+    public static String SEND_EMAIL;
 
     @Value("${spring.profiles.active}")
     public void setProfileActive(String profileActive) {
@@ -36,5 +36,10 @@ public class PropertiesConfiguration {
     @Value("${cloudinary.url}")
     public void setCloudinaryUrl(String cloudinaryUrl) {
         PropertiesConfiguration.CLOUDINARY_URL = cloudinaryUrl;
+    }
+
+    @Value("${send.email}")
+    public void setSendEmail(String sendEmail) {
+        PropertiesConfiguration.SEND_EMAIL = sendEmail;
     }
 }
